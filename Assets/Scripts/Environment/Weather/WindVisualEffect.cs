@@ -27,6 +27,12 @@ namespace Environment.Weather
 
         public void SetActive(bool active)
         {
+            if (ps == null)
+                ps = GetComponent<ParticleSystem>();
+
+            if (ps == null)
+                return;
+
             if (active && !ps.isPlaying) ps.Play();
             else if (!active && ps.isPlaying) ps.Stop();
         }
