@@ -14,10 +14,10 @@ GameObject:
   - component: {fileID: 846311217888939289}
   - component: {fileID: 3755770553177229050}
   - component: {fileID: 3376667625643286423}
-  - component: {fileID: 9103311833759115876}
-  - component: {fileID: 408653698876107827}
+  - component: {fileID: 2779408574101313906}
+  - component: {fileID: 5660431050462672096}
   m_Layer: 0
-  m_Name: Knight
+  m_Name: Sorcerer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 4732108334705783073}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.852624, y: -2.5516806, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 3, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -88,7 +88,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4723107735738678597, guid: ace99b47ac0ed0242a4c7f1d90040fb0, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -194,8 +194,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cea21a9a375d2364f8512a3da3db4f6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterType
-  character: 0
---- !u!95 &9103311833759115876
+  character: 2
+--- !u!95 &2779408574101313906
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
@@ -205,7 +205,7 @@ Animator:
   m_GameObject: {fileID: 4732108334705783073}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c6950afd103177243ac608f43946ac1f, type: 2}
+  m_Controller: {fileID: 9100000, guid: ff44cd203e9f8174f93241976b217f62, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -217,7 +217,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &408653698876107827
+--- !u!114 &5660431050462672096
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e5c95de7124b4193520d02268a1a58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationSync
-  animator: {fileID: 9103311833759115876}
+  animator: {fileID: 2779408574101313906}
   body: {fileID: 7956097992712201876}
   playerController: {fileID: 3755770553177229050}
   playerHealth: {fileID: 0}

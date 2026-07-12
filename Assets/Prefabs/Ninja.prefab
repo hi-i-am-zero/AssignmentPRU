@@ -45,6 +45,8 @@ GameObject:
   - component: {fileID: 9194876383655103890}
   - component: {fileID: 7446844257389368816}
   - component: {fileID: 788220997011625603}
+  - component: {fileID: 5239698072726780672}
+  - component: {fileID: 4867780192430206492}
   m_Layer: 0
   m_Name: Ninja
   m_TagString: Untagged
@@ -125,7 +127,7 @@ SpriteRenderer:
   m_Size: {x: 0.32, y: 0.82}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!50 &84417351095588211
 Rigidbody2D:
@@ -224,3 +226,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterType
   character: 1
+--- !u!95 &5239698072726780672
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6950661439465875454}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9b7fcbde68624de4088860c5ae64042a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &4867780192430206492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6950661439465875454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4e5c95de7124b4193520d02268a1a58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationSync
+  animator: {fileID: 5239698072726780672}
+  body: {fileID: 84417351095588211}
+  playerController: {fileID: 7446844257389368816}
+  playerHealth: {fileID: 0}
+  deathSystem: {fileID: 0}
+  speedReference: 6
+  speedDamping: 0.08
