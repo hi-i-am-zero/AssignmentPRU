@@ -25,6 +25,8 @@ namespace SkyfallArena.Systems.Items
         [SerializeField, Min(0.1f)] float fallbackRespawnDelay = 8f;
         [SerializeField] bool usePooling = true;
         [SerializeField, Min(0)] int prewarmPerDefinition;
+        [SerializeField] bool allowHitDrops = true;
+        [SerializeField, Min(0f)] float hitDropScatterRadius = 0.45f;
         [SerializeField] bool verboseLogs;
 
         [Header("Events")]
@@ -148,10 +150,11 @@ namespace SkyfallArena.Systems.Items
                 StartCoroutine(RespawnAfterDelay(spawnPoint));
             }
 
-            if (definition != null && spawnPoint != null)
+            if (definition != null)
             {
                 ItemCollected?.Invoke(definition, spawnPoint);
-                onItemCollected.Invoke(definition.ItemType, spawnPoint.Position);
+                Vector2 collectPosition = spawnPoint != null ? spawnPoint.Position : (Vector2)pickup.transform.position;
+                onItemCollected.Invoke(definition.ItemType, collectPosition);
             }
 
             RecyclePickup(pickup);
@@ -174,6 +177,44 @@ namespace SkyfallArena.Systems.Items
 
             var discovered = FindObjectsByType<ArenaEnvironment.ItemSpawnPoint>(FindObjectsSortMode.None);
             return discovered;
+        }
+
+        public bool TrySpawnHitDrop(Vector2 worldPosition)
+        {
+            if (!allowHitDrops)
+                return false;
+
+            if (validPool.Count == 0)
+                RebuildPool();
+
+            if (validPool.Count == 0)
+                return false;
+
+            ItemDefinition definition = validPool[UnityEngine.Random.Range(0, validPool.Count)];
+            if (definition == null)
+                return false;
+
+            ItemPickup prefab = definition.PickupPrefabOverride != null
+                ? definition.PickupPrefabOverride
+                : defaultItemPickupPrefab;
+
+            if (prefab == null)
+                return false;
+
+            Vector2 spawnPosition = worldPosition;
+            if (hitDropScatterRadius > 0f)
+                spawnPosition += UnityEngine.Random.insideUnitCircle * hitDropScatterRadius;
+
+            var instance = AcquirePickup(prefab, spawnPosition);
+            instance.name = $"Item_Drop_{definition.ItemType}";
+
+            int itemLayer = LayerMask.NameToLayer(ArenaEnvironment.GameLayers.Item);
+            if (itemLayer >= 0)
+                instance.gameObject.layer = itemLayer;
+
+            instance.Initialize(definition, this, spawnPoint: null, itemLevelManager);
+            onItemSpawned.Invoke(definition.ItemType, spawnPosition);
+            return true;
         }
 
         ItemPickup AcquirePickup(ItemPickup prefab, Vector2 position)

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67ad5b76a84297448ba2684ffafb8d6d, type: 3}
+  m_Name: Item_JumpBoost
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemDefinition
+  itemType: 0
+  displayName: Jump Boost
+  maxLevel: 3
+  worldSprite: {fileID: 21300000, guid: 49cc92b833456a74c8a516535267bb7d, type: 3}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  levelData:
+  - level: 1
+    description: 'Lv1: +2 Jump Force'
+  - level: 2
+    description: 'Lv2: +4 Jump Force'
+  - level: 3
+    description: 'Lv3: +6 Jump Force'
+  pickupPrefabOverride: {fileID: 665231842852606894, guid: 6b3a3fcab3dd4f3f9d273f8f3a71e632, type: 3}

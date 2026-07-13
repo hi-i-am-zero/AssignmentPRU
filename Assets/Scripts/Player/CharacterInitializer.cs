@@ -10,6 +10,7 @@ public class CharacterInitializer : MonoBehaviour
 
     // Script điều khiển nhân vật
     private PlayerController playerController;
+    private ComboController comboController;
 
     private void Awake()
     {
@@ -17,18 +18,16 @@ public class CharacterInitializer : MonoBehaviour
         characterType = GetComponent<CharacterType>();
         status = GetComponent<CharacterStatus>();
         playerController = GetComponent<PlayerController>();
+        comboController = GetComponent<ComboController>();
 
-<<<<<<< HEAD
         if (characterType == null || status == null || playerController == null)
         {
             Debug.LogWarning("CharacterInitializer requires CharacterType, CharacterStatus, and PlayerController.", this);
             return;
         }
 
-        // Gán chỉ số theo từng nhân vật
-=======
         // Gán chỉ số theo từng loại nhân vật
->>>>>>> origin/vund
+        int comboCount = 3;
         switch (characterType.character)
         {
             //--------------------------------------------------
@@ -54,6 +53,7 @@ public class CharacterInitializer : MonoBehaviour
 
                 // Lực hất văng đối thủ
                 status.knockbackForce = 10f;
+                comboCount = 3;
 
                 break;
 
@@ -81,6 +81,7 @@ public class CharacterInitializer : MonoBehaviour
 
                 // Lực hất văng đối thủ
                 status.knockbackForce = 5f;
+                comboCount = 3;
 
                 break;
 
@@ -108,6 +109,7 @@ public class CharacterInitializer : MonoBehaviour
 
                 // Lực hất văng đối thủ
                 status.knockbackForce = 7f;
+                comboCount = 4;
 
                 break;
         }
@@ -116,5 +118,8 @@ public class CharacterInitializer : MonoBehaviour
         {
             playerController.moveSpeed = status.moveSpeed;
         }
+
+        if (comboController != null)
+            comboController.maxCombo = comboCount;
     }
 }

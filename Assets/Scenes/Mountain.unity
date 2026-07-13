@@ -119,6 +119,95 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &36712495
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 36712498}
+  - component: {fileID: 36712497}
+  - component: {fileID: 36712496}
+  m_Layer: 0
+  m_Name: Item Systems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &36712496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36712495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3653d7c9979a3af48af1bb49fd49d3a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemSpawner
+  arenaManager: {fileID: 174501714}
+  itemLevelManager: {fileID: 36712497}
+  defaultItemPickupPrefab: {fileID: 665231842852606894, guid: 9f8a5ddaf57f4c2a9e8a9210d011d0a1, type: 3}
+  itemPool:
+  - {fileID: 11400000, guid: 2f45cdf0a1224e1408bff344eef99426, type: 2}
+  - {fileID: 11400000, guid: 40b1dc8e2dbe5ab498308a0551a88dc0, type: 2}
+  - {fileID: 11400000, guid: 224aadcab4a37da4190329cfd6bf9170, type: 2}
+  runtimeItemRoot: {fileID: 1378932413}
+  spawnOnStart: 1
+  fallbackRespawnDelay: 8
+  usePooling: 1
+  prewarmPerDefinition: 1
+  allowHitDrops: 1
+  hitDropScatterRadius: 0.45
+  verboseLogs: 0
+  onItemSpawned:
+    m_PersistentCalls:
+      m_Calls: []
+  onItemCollected:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &36712497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36712495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 336b53e5244dc58499dad16d361d065d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemLevelManager
+  availableItems:
+  - {fileID: 11400000, guid: 2f45cdf0a1224e1408bff344eef99426, type: 2}
+  - {fileID: 11400000, guid: 40b1dc8e2dbe5ab498308a0551a88dc0, type: 2}
+  - {fileID: 11400000, guid: 224aadcab4a37da4190329cfd6bf9170, type: 2}
+  onItemPicked:
+    m_PersistentCalls:
+      m_Calls: []
+  onItemLevelChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &36712498
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36712495}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1378932413}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &74358001
 GameObject:
   m_ObjectHideFlags: 0
@@ -12325,6 +12414,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Environment.PlayerSpawnPoint
   playerIndex: 3
   gizmoColor: {r: 0.2, g: 0.8, b: 1, a: 0.8}
+--- !u!1 &1378932412
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1378932413}
+  m_Layer: 0
+  m_Name: RuntimeItems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1378932413
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1378932412}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 36712498}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1442945757
 GameObject:
   m_ObjectHideFlags: 0
@@ -13240,3 +13360,4 @@ SceneRoots:
   - {fileID: 913615069}
   - {fileID: 1643287271}
   - {fileID: 1345279947}
+  - {fileID: 36712498}

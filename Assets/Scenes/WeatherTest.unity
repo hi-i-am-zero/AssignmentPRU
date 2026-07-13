@@ -119,6 +119,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &20301670
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 20301671}
+  m_Layer: 0
+  m_Name: RuntimeItems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &20301671
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 20301670}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1108435792}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &67299442
 GameObject:
   m_ObjectHideFlags: 0
@@ -1800,6 +1831,95 @@ MonoBehaviour:
   style: 2
   areaWidth: 26
   areaHeight: 14
+--- !u!1 &1108435789
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1108435792}
+  - component: {fileID: 1108435791}
+  - component: {fileID: 1108435790}
+  m_Layer: 0
+  m_Name: Item Systems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1108435790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1108435789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3653d7c9979a3af48af1bb49fd49d3a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemSpawner
+  arenaManager: {fileID: 1866215723}
+  itemLevelManager: {fileID: 1108435791}
+  defaultItemPickupPrefab: {fileID: 0}
+  itemPool:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  runtimeItemRoot: {fileID: 20301671}
+  spawnOnStart: 1
+  fallbackRespawnDelay: 8
+  usePooling: 1
+  prewarmPerDefinition: 1
+  allowHitDrops: 1
+  hitDropScatterRadius: 0.45
+  verboseLogs: 0
+  onItemSpawned:
+    m_PersistentCalls:
+      m_Calls: []
+  onItemCollected:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1108435791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1108435789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 336b53e5244dc58499dad16d361d065d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemLevelManager
+  availableItems:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  onItemPicked:
+    m_PersistentCalls:
+      m_Calls: []
+  onItemLevelChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1108435792
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1108435789}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 20301671}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1110974561
 GameObject:
   m_ObjectHideFlags: 0
@@ -12735,3 +12855,4 @@ SceneRoots:
   - {fileID: 1775780974}
   - {fileID: 67299447}
   - {fileID: 1708991923}
+  - {fileID: 1108435792}

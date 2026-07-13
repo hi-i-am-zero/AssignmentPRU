@@ -37,6 +37,7 @@ namespace SkyfallArena.Systems
         [SerializeField] PlayerStateUnityEvent onKilled = new PlayerStateUnityEvent();
 
         CharacterStatus characterStatus;
+        PlayerUpgrade playerUpgrade;
         PlayerIdentity playerIdentity;
         LocalPlayerInputSource localInputSource;
         PlayerController playerController;
@@ -86,6 +87,7 @@ namespace SkyfallArena.Systems
         void Awake()
         {
             characterStatus = GetComponent<CharacterStatus>();
+            playerUpgrade = GetComponent<PlayerUpgrade>();
             playerIdentity = GetComponent<PlayerIdentity>();
             localInputSource = GetComponent<LocalPlayerInputSource>();
             playerController = GetComponent<PlayerController>();
@@ -126,6 +128,15 @@ namespace SkyfallArena.Systems
         public void TakeDamage(float amount)
         {
             if (!isAlive || amount <= 0f)
+                return;
+
+            if (playerUpgrade != null && playerUpgrade.damageReduction > 0f)
+            {
+                float reduction = Mathf.Clamp01(playerUpgrade.damageReduction);
+                amount *= 1f - reduction;
+            }
+
+            if (amount <= 0f)
                 return;
 
             float previous = currentHealth;

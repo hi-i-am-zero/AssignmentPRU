@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using SkyfallArena.Systems.Items;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -182,6 +183,19 @@ static class CharacterAnimationBuilder
             var existingClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
             if (existingClip != null)
             {
+                if (forceRebuildController)
+                {
+                    var overwriteSprites = LoadSpritesFromSheet(sourcePath);
+                    if (overwriteSprites.Count == 0)
+                    {
+                        if (!clipSpec.Optional)
+                            Debug.LogWarning($"[CharacterAnimationBuilder] No sprites found in: {sourcePath}");
+                        continue;
+                    }
+
+                    OverwriteClip(existingClip, overwriteSprites, clipSpec.Fps, clipSpec.Loop);
+                }
+
                 clipsByState[clipSpec.StateName] = existingClip;
                 continue;
             }
@@ -246,6 +260,38 @@ static class CharacterAnimationBuilder
         settings.loopTime = loop;
         AnimationUtility.SetAnimationClipSettings(clip, settings);
         return clip;
+    }
+
+    static void OverwriteClip(AnimationClip clip, IReadOnlyList<Sprite> sprites, float fps, bool loop)
+    {
+        if (clip == null || sprites == null || sprites.Count == 0)
+            return;
+
+        var binding = new EditorCurveBinding
+        {
+            type = typeof(SpriteRenderer),
+            path = string.Empty,
+            propertyName = "m_Sprite"
+        };
+
+        var keyframes = new ObjectReferenceKeyframe[sprites.Count];
+        float frameRate = Mathf.Max(1f, fps);
+        for (int index = 0; index < sprites.Count; index++)
+        {
+            keyframes[index] = new ObjectReferenceKeyframe
+            {
+                time = index / frameRate,
+                value = sprites[index]
+            };
+        }
+
+        clip.frameRate = frameRate;
+        AnimationUtility.SetObjectReferenceCurve(clip, binding, keyframes);
+
+        var settings = AnimationUtility.GetAnimationClipSettings(clip);
+        settings.loopTime = loop;
+        AnimationUtility.SetAnimationClipSettings(clip, settings);
+        EditorUtility.SetDirty(clip);
     }
 
     static List<Sprite> LoadSpritesFromSheet(string sourcePath)
@@ -664,6 +710,12 @@ static class CharacterAnimationBuilder
         if (root.GetComponent<KnockbackController>() == null)
             root.AddComponent<KnockbackController>();
 
+        if (root.GetComponent<PlayerUpgrade>() == null)
+            root.AddComponent<PlayerUpgrade>();
+
+        if (root.GetComponent<PlayerUpgradeBuffAdapter>() == null)
+            root.AddComponent<PlayerUpgradeBuffAdapter>();
+
         var attackController = root.GetComponent<AttackController>();
         if (attackController == null)
             attackController = root.AddComponent<AttackController>();
@@ -673,6 +725,19 @@ static class CharacterAnimationBuilder
         int playerMask = LayerMask.GetMask("Player");
         if (playerMask != 0)
             attackController.playerLayer = playerMask;
+
+        if (ResolveCharacterEnum(spec.CharacterName) == CharacterType.Character.Sorcerer)
+        {
+            string spriteFolder = $"{SpriteRoot}/{spec.CharacterName}";
+            Sprite projectile1 = LoadFirstSprite(spriteFolder, "SorcererCharge_1", "SorcererCharge");
+            Sprite projectile2 = LoadFirstSprite(spriteFolder, "SorcererCharge_2", "SorcererCharge");
+
+            var serializedAttackController = new SerializedObject(attackController);
+            serializedAttackController.FindProperty("useRangedProjectilesForSorcerer").boolValue = true;
+            serializedAttackController.FindProperty("sorcererProjectileType1Sprite").objectReferenceValue = projectile1;
+            serializedAttackController.FindProperty("sorcererProjectileType2Sprite").objectReferenceValue = projectile2;
+            serializedAttackController.ApplyModifiedPropertiesWithoutUndo();
+        }
     }
 
     static Transform EnsureAttackPoint(Transform root)
@@ -712,6 +777,19 @@ static class CharacterAnimationBuilder
         }
 
         return null;
+    }
+
+    static Sprite LoadFirstSprite(string folderPath, params string[] candidates)
+    {
+        string sourcePath = ResolveSourcePath(folderPath, candidates);
+        if (string.IsNullOrEmpty(sourcePath))
+            return null;
+
+        var sprites = LoadSpritesFromSheet(sourcePath);
+        if (sprites == null || sprites.Count == 0)
+            return null;
+
+        return sprites[0];
     }
 
     static void EnsureFolder(string parentPath, string childFolder)
@@ -768,7 +846,7 @@ static class CharacterAnimationBuilder
         yield return new CharacterSpec(
             "Sorcerer",
             "Assets/Prefabs/Sorcerer.prefab",
-            comboCount: 3,
+            comboCount: 4,
             useShield: false,
             useCharge: true,
             clips: new List<ClipSpec>
@@ -777,9 +855,10 @@ static class CharacterAnimationBuilder
                 new ClipSpec("Walk", loop: true, sourcePngFileNames: new[] { "SorcererWalk" }),
                 new ClipSpec("Run", loop: true, sourcePngFileNames: new[] { "SorcererRun" }),
                 // No dedicated Jump sheet found for Sorcerer in current project.
-                new ClipSpec("Attack_1", loop: false, sourcePngFileNames: new[] { "SorcererAttack_1" }),
-                new ClipSpec("Attack_2", loop: false, sourcePngFileNames: new[] { "SorcererAttack_2" }),
-                new ClipSpec("Attack_3", loop: false, sourcePngFileNames: new[] { "SorcererAttack_3" }),
+                new ClipSpec("Attack_1", loop: false, sourcePngFileNames: new[] { "SorcererCharge_1", "SorcererAttack_1" }),
+                new ClipSpec("Attack_2", loop: false, sourcePngFileNames: new[] { "SorcererCharge_2", "SorcererAttack_2" }),
+                new ClipSpec("Attack_3", loop: false, sourcePngFileNames: new[] { "SorcererCharge_1", "SorcererAttack_3" }),
+                new ClipSpec("Attack_4", loop: false, sourcePngFileNames: new[] { "SorcererCharge_2", "SorcererAttack_4" }),
                 new ClipSpec("Hurt", loop: false, sourcePngFileNames: new[] { "SorcererHurt" }),
                 new ClipSpec("Death", loop: false, sourcePngFileNames: new[] { "SorcererDead" }),
                 new ClipSpec("Charge", loop: false, optional: true, sourcePngFileNames: new[] { "SorcererCharge", "SorcererCharge_1", "SorcererCharge_2" })

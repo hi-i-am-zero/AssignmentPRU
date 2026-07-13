@@ -1,4 +1,9 @@
 ﻿using UnityEngine;
+using SkyfallArena.Systems.Items;
+using SkyfallArena.Systems;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class PlayerController : MonoBehaviour
 {
@@ -41,6 +46,11 @@ public class PlayerController : MonoBehaviour
 
     // Giá trị di chuyển ngang (-1, 0, 1)
     private float horizontal;
+
+    private void Awake()
+    {
+        EnsureCombatAndAnimationSetup();
+    }
 
     private void Start()
     {
@@ -181,5 +191,105 @@ public class PlayerController : MonoBehaviour
             groundCheck.position,
             groundRadius
         );
+    }
+
+    void EnsureCombatAndAnimationSetup()
+    {
+        int playerLayer = LayerMask.NameToLayer(Environment.GameLayers.Player);
+        if (playerLayer >= 0)
+            gameObject.layer = playerLayer;
+
+        if (GetComponent<CharacterStatus>() == null)
+            gameObject.AddComponent<CharacterStatus>();
+
+        if (GetComponent<CharacterInitializer>() == null)
+            gameObject.AddComponent<CharacterInitializer>();
+
+        if (GetComponent<ComboController>() == null)
+            gameObject.AddComponent<ComboController>();
+
+        if (GetComponent<KnockbackController>() == null)
+            gameObject.AddComponent<KnockbackController>();
+
+        if (GetComponent<PlayerHealth>() == null)
+            gameObject.AddComponent<PlayerHealth>();
+
+        if (GetComponent<DeathSystem>() == null)
+            gameObject.AddComponent<DeathSystem>();
+
+        if (GetComponent<PlayerUpgrade>() == null)
+            gameObject.AddComponent<PlayerUpgrade>();
+
+        if (GetComponent<PlayerUpgradeBuffAdapter>() == null)
+            gameObject.AddComponent<PlayerUpgradeBuffAdapter>();
+
+        var animator = GetComponent<Animator>();
+        if (animator == null)
+            animator = gameObject.AddComponent<Animator>();
+        animator.applyRootMotion = false;
+
+        TryAssignDefaultAnimatorController(animator);
+
+        if (GetComponent<CharacterAnimationSync>() == null)
+            gameObject.AddComponent<CharacterAnimationSync>();
+
+        var attackController = GetComponent<AttackController>();
+        if (attackController == null)
+            attackController = gameObject.AddComponent<AttackController>();
+
+        if (attackController.attackPoint == null)
+            attackController.attackPoint = EnsureAttackPoint();
+
+        if (attackController.playerLayer.value == 0)
+        {
+            int mask = LayerMask.GetMask(Environment.GameLayers.Player);
+            if (mask != 0)
+                attackController.playerLayer = mask;
+        }
+    }
+
+    Transform EnsureAttackPoint()
+    {
+        var existing = transform.Find("AttackPoint");
+        if (existing != null)
+            return existing;
+
+        var go = new GameObject("AttackPoint");
+        var point = go.transform;
+        point.SetParent(transform);
+        point.localRotation = Quaternion.identity;
+        point.localScale = Vector3.one;
+        point.localPosition = new Vector3(0.45f, 0f, 0f);
+        return point;
+    }
+
+    void TryAssignDefaultAnimatorController(Animator animator)
+    {
+        if (animator == null || animator.runtimeAnimatorController != null)
+            return;
+
+#if UNITY_EDITOR
+        var characterType = GetComponent<CharacterType>();
+        string path = "Assets/Animations/Knight/Knight.controller";
+        if (characterType != null)
+        {
+            switch (characterType.character)
+            {
+                case CharacterType.Character.Ninja:
+                    path = "Assets/Animations/Ninja/Ninja.controller";
+                    break;
+                case CharacterType.Character.Sorcerer:
+                    path = "Assets/Animations/Sorcerer/Sorcerer.controller";
+                    break;
+                default:
+                    path = "Assets/Animations/Knight/Knight.controller";
+                    break;
+            }
+        }
+
+        var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(path);
+        if (controller != null)
+            animator.runtimeAnimatorController = controller;
+#endif
     }
 }

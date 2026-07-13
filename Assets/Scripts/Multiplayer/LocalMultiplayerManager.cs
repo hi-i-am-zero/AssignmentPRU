@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using ArenaEnvironment = Environment;
 using SkyfallArena.Systems;
+using SkyfallArena.Systems.Items;
 
 namespace SkyfallArena.Multiplayer
 {
@@ -73,6 +74,7 @@ namespace SkyfallArena.Multiplayer
         [Header("Member 2 Core Systems")]
         [SerializeField] bool autoAttachCoreSystems = true;
         [SerializeField] bool autoAttachFallDetection = true;
+        [SerializeField] bool autoAttachItemUpgradeBridge = true;
 
         [Header("Keyboard Splits")]
         [SerializeField] KeyboardLayout[] keyboardLayouts;
@@ -268,6 +270,9 @@ namespace SkyfallArena.Multiplayer
 
             if (autoAttachCoreSystems)
                 EnsureCoreSystems(spawned);
+
+            if (autoAttachItemUpgradeBridge)
+                EnsureItemUpgradeBridge(spawned);
 
             var source = spawned.GetComponent<LocalPlayerInputSource>();
             if (source == null)
@@ -664,6 +669,18 @@ namespace SkyfallArena.Multiplayer
 
             if (autoAttachFallDetection && playerObject.GetComponent<FallDetection>() == null)
                 playerObject.AddComponent<FallDetection>();
+        }
+
+        static void EnsureItemUpgradeBridge(GameObject playerObject)
+        {
+            if (playerObject == null)
+                return;
+
+            if (playerObject.GetComponent<PlayerUpgrade>() == null)
+                playerObject.AddComponent<PlayerUpgrade>();
+
+            if (playerObject.GetComponent<PlayerUpgradeBuffAdapter>() == null)
+                playerObject.AddComponent<PlayerUpgradeBuffAdapter>();
         }
 
         static KeyboardLayout[] BuildDefaultKeyboardLayouts()

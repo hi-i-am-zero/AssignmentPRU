@@ -21,19 +21,17 @@ public class PlayerUpgrade : MonoBehaviour
 
     // Điều khiển nhân vật
     private PlayerController playerController;
+    private ComboController comboController;
 
     // Lưu chỉ số gốc để làm mốc nâng cấp
     private float baseJumpForce;
     private int baseDamage;
+    private int baseMaxCombo;
+    private bool isInitialized;
 
     private void Start()
     {
-        status = GetComponent<CharacterStatus>();
-        playerController = GetComponent<PlayerController>();
-
-        // Lưu giá trị ban đầu của nhân vật
-        baseJumpForce = playerController.jumpForce;
-        baseDamage = status.damage;
+        EnsureInitialized();
     }
 
     /// <summary>
@@ -42,6 +40,9 @@ public class PlayerUpgrade : MonoBehaviour
     /// </summary>
     public void UpgradeJumpBoost()
     {
+        if (!EnsureInitialized())
+            return;
+
         if (jumpBoostLevel >= 3)
             return;
 
@@ -51,10 +52,13 @@ public class PlayerUpgrade : MonoBehaviour
 
     /// <summary>
     /// Nâng cấp Attack Chain.
-    /// Tăng sát thương tối đa đến Lv3.
+    /// Mở thêm số đòn combo và tăng sát thương tối đa đến Lv3.
     /// </summary>
     public void UpgradeAttackChain()
     {
+        if (!EnsureInitialized())
+            return;
+
         if (attackChainLevel >= 3)
             return;
 
@@ -68,6 +72,9 @@ public class PlayerUpgrade : MonoBehaviour
     /// </summary>
     public void UpgradeShieldWall()
     {
+        if (!EnsureInitialized())
+            return;
+
         if (shieldWallLevel >= 3)
             return;
 
@@ -107,8 +114,23 @@ public class PlayerUpgrade : MonoBehaviour
     /// </summary>
     private void ApplyAttackChain()
     {
+        // Mở rộng số đòn combo theo cấp Attack Chain dựa trên mốc mặc định từng nhân vật.
+        // Lv0: 1 đòn, Lv1: 2 đòn, Lv2: 3 đòn, Lv3: 4 đòn (nếu class có đủ combo gốc).
+        if (comboController != null)
+        {
+            int unlockedCombo = Mathf.Clamp(
+                1 + attackChainLevel,
+                1,
+                Mathf.Max(1, baseMaxCombo));
+            comboController.maxCombo = unlockedCombo;
+        }
+
         switch (attackChainLevel)
         {
+            default:
+            case 0:
+                status.damage = baseDamage;
+                break;
             case 1:
                 status.damage = baseDamage + 5;
                 break;
@@ -154,5 +176,37 @@ public class PlayerUpgrade : MonoBehaviour
             damageReduction * 100 +
             "% Damage Reduction)"
         );
+    }
+
+    private bool EnsureInitialized()
+    {
+        if (isInitialized)
+            return true;
+
+        if (status == null)
+            status = GetComponent<CharacterStatus>();
+
+        if (playerController == null)
+            playerController = GetComponent<PlayerController>();
+
+        if (comboController == null)
+            comboController = GetComponent<ComboController>();
+
+        if (status == null || playerController == null)
+        {
+            Debug.LogWarning("PlayerUpgrade requires CharacterStatus and PlayerController.", this);
+            return false;
+        }
+
+        // Lưu giá trị ban đầu của nhân vật
+        baseJumpForce = playerController.jumpForce;
+        baseDamage = status.damage;
+        baseMaxCombo = comboController != null ? Mathf.Max(1, comboController.maxCombo) : 1;
+
+        // Đồng bộ trạng thái mặc định khi chưa nhặt item.
+        ApplyAttackChain();
+
+        isInitialized = true;
+        return true;
     }
 }

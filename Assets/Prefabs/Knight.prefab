@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3294751249118803710
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8507745638403466006}
+  m_Layer: 0
+  m_Name: AttackPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8507745638403466006
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3294751249118803710}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.45, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 988417994126711395}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4732108334705783073
 GameObject:
   m_ObjectHideFlags: 0
@@ -12,13 +43,17 @@ GameObject:
   - component: {fileID: 6532904320514944784}
   - component: {fileID: 7956097992712201876}
   - component: {fileID: 846311217888939289}
+  - component: {fileID: 3755770553177229050}
   - component: {fileID: 3376667625643286423}
-<<<<<<< HEAD
-  - component: {fileID: 9103311833759115876}
-  - component: {fileID: 408653698876107827}
-=======
-  - component: {fileID: 3962743190231166616}
->>>>>>> origin/vund
+  - component: {fileID: 1470745770186070539}
+  - component: {fileID: 4533365362080114134}
+  - component: {fileID: 5764888444967085748}
+  - component: {fileID: 1048003953392034952}
+  - component: {fileID: 5913182694491108711}
+  - component: {fileID: 1832593215932714259}
+  - component: {fileID: 2960123421089524441}
+  - component: {fileID: 87497613485576957}
+  - component: {fileID: 2331360252184534332}
   m_Layer: 0
   m_Name: Knight
   m_TagString: Untagged
@@ -36,10 +71,11 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.852624, y: -2.5516806, z: 0}
-  m_LocalScale: {x: 3, y: 1.5, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8962589647503442160}
+  - {fileID: 8507745638403466006}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6532904320514944784
@@ -91,7 +127,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4723107735738678597, guid: ace99b47ac0ed0242a4c7f1d90040fb0, type: 3}
+  m_Sprite: {fileID: -1561314798596654798, guid: 13cf672b336ad4745bdf3c4b9e287db1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -99,7 +135,7 @@ SpriteRenderer:
   m_Size: {x: 0.32, y: 0.82}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!50 &7956097992712201876
 Rigidbody2D:
@@ -165,6 +201,26 @@ CapsuleCollider2D:
   m_Offset: {x: 0.008111107, y: -0.0087195765}
   m_Size: {x: 0.33622223, y: 0.9188218}
   m_Direction: 0
+--- !u!114 &3755770553177229050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2b54abba909b354c8e8e87598a764d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  playerType: 0
+  moveSpeed: 6
+  jumpForce: 15
+  groundCheck: {fileID: 8962589647503442160}
+  groundRadius: 0.2
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &3376667625643286423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,8 +234,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterType
   character: 0
-<<<<<<< HEAD
---- !u!95 &9103311833759115876
+--- !u!114 &1470745770186070539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7caf1b936e9b5b743b106ffce909c6b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUpgrade
+  jumpBoostLevel: 0
+  attackChainLevel: 0
+  shieldWallLevel: 0
+  damageReduction: 0
+--- !u!114 &4533365362080114134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5024794dbf4042398f7713ff55f07e57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.PlayerUpgradeBuffAdapter
+  playerUpgrade: {fileID: 1470745770186070539}
+  verboseLogs: 0
+--- !u!95 &5764888444967085748
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
@@ -201,10 +286,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &408653698876107827
-=======
---- !u!114 &3962743190231166616
->>>>>>> origin/vund
+--- !u!114 &1048003953392034952
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -213,30 +295,101 @@ MonoBehaviour:
   m_GameObject: {fileID: 4732108334705783073}
   m_Enabled: 1
   m_EditorHideFlags: 0
-<<<<<<< HEAD
   m_Script: {fileID: 11500000, guid: c4e5c95de7124b4193520d02268a1a58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationSync
-  animator: {fileID: 9103311833759115876}
+  animator: {fileID: 5764888444967085748}
   body: {fileID: 7956097992712201876}
   playerController: {fileID: 3755770553177229050}
   playerHealth: {fileID: 0}
   deathSystem: {fileID: 0}
   speedReference: 6
   speedDamping: 0.08
-=======
-  m_Script: {fileID: 11500000, guid: b2b54abba909b354c8e8e87598a764d2, type: 3}
+--- !u!114 &5913182694491108711
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfc7512d85df0fd43822e646820da9aa, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  playerType: 0
-  moveSpeed: 6
-  jumpForce: 12
-  groundCheck: {fileID: 8962589647503442160}
-  groundRadius: 0.2
-  groundLayer:
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterStatus
+  moveSpeed: 0
+  maxHP: 0
+  damage: 0
+  attackRange: 0
+  attackCooldown: 0
+  knockbackForce: 0
+--- !u!114 &1832593215932714259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 872dc475b34f7ef4d8adbd3538402822, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterInitializer
+--- !u!114 &2960123421089524441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17596078d10202549843e21b251408bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ComboController
+  maxCombo: 3
+  comboResetTime: 0.5
+--- !u!114 &87497613485576957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f952b6733fcfd48a8e7f2a874294b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KnockbackController
+  upwardForce: 0.4
+  knockbackDuration: 0.15
+--- !u!114 &2331360252184534332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 556ae55c1cc72894aa7b0bb2558e45d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AttackController
+  attackPoint: {fileID: 8507745638403466006}
+  playerLayer:
     serializedVersion: 2
-    m_Bits: 64
->>>>>>> origin/vund
+    m_Bits: 128
+  dropItemOnHit: 1
+  dropChanceOnHit: 0.2
+  itemSpawner: {fileID: 0}
+  useRangedProjectilesForSorcerer: 1
+  sorcererProjectileSpeed: 11
+  sorcererProjectileLifetime: 0.9
+  sorcererProjectileRadius: 0.2
+  sorcererProjectileSpawnOffset: {x: 0.65, y: 0}
+  sorcererProjectileTint: {r: 0.65, g: 0.9, b: 1, a: 0.95}
+  sorcererProjectileType1Sprite: {fileID: 0}
+  sorcererProjectileType2Sprite: {fileID: 0}
 --- !u!1 &7079248950319593026
 GameObject:
   m_ObjectHideFlags: 0

@@ -37,12 +37,12 @@ public class ComboController : MonoBehaviour
     public int NextCombo()
     {
         timer = 0f;
+        int safeMax = Mathf.Max(1, maxCombo);
 
-        // Nếu chưa đạt combo tối đa
-        if (comboStep < maxCombo)
-        {
-            comboStep++;
-        }
+        if (comboStep <= 0)
+            comboStep = 1;
+        else
+            comboStep = comboStep >= safeMax ? 1 : comboStep + 1;
 
         return comboStep;
     }
