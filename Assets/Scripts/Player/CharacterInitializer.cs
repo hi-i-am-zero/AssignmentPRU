@@ -13,6 +13,12 @@ public class CharacterInitializer : MonoBehaviour
         status = GetComponent<CharacterStatus>();
         playerController = GetComponent<PlayerController>();
 
+        if (characterType == null || status == null || playerController == null)
+        {
+            Debug.LogWarning("CharacterInitializer requires CharacterType, CharacterStatus, and PlayerController.", this);
+            return;
+        }
+
         // Gán chỉ số theo từng nhân vật
         switch (characterType.character)
         {

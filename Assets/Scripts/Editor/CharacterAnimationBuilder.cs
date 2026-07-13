@@ -147,6 +147,8 @@ static class CharacterAnimationBuilder
                 if (root.GetComponent<CharacterAnimationSync>() == null)
                     root.AddComponent<CharacterAnimationSync>();
 
+                EnsureCombatSetup(root, spec);
+
                 PrefabUtility.SaveAsPrefabAsset(root, spec.PrefabPath);
                 Debug.Log($"[CharacterAnimationBuilder] Assigned controller to {spec.PrefabPath}");
             }
@@ -641,6 +643,56 @@ static class CharacterAnimationBuilder
             return CharacterType.Character.Sorcerer;
 
         return CharacterType.Character.Knight;
+    }
+
+    static void EnsureCombatSetup(GameObject root, CharacterSpec spec)
+    {
+        if (root == null)
+            return;
+
+        if (root.GetComponent<CharacterStatus>() == null)
+            root.AddComponent<CharacterStatus>();
+
+        if (root.GetComponent<CharacterInitializer>() == null)
+            root.AddComponent<CharacterInitializer>();
+
+        var comboController = root.GetComponent<ComboController>();
+        if (comboController == null)
+            comboController = root.AddComponent<ComboController>();
+        comboController.maxCombo = Mathf.Max(1, spec.ComboCount);
+
+        if (root.GetComponent<KnockbackController>() == null)
+            root.AddComponent<KnockbackController>();
+
+        var attackController = root.GetComponent<AttackController>();
+        if (attackController == null)
+            attackController = root.AddComponent<AttackController>();
+
+        attackController.attackPoint = EnsureAttackPoint(root.transform);
+
+        int playerMask = LayerMask.GetMask("Player");
+        if (playerMask != 0)
+            attackController.playerLayer = playerMask;
+    }
+
+    static Transform EnsureAttackPoint(Transform root)
+    {
+        if (root == null)
+            return null;
+
+        const string attackPointName = "AttackPoint";
+        var attackPoint = root.Find(attackPointName);
+        if (attackPoint == null)
+        {
+            var go = new GameObject(attackPointName);
+            attackPoint = go.transform;
+            attackPoint.SetParent(root);
+        }
+
+        attackPoint.localRotation = Quaternion.identity;
+        attackPoint.localScale = Vector3.one;
+        attackPoint.localPosition = new Vector3(0.45f, 0f, 0f);
+        return attackPoint;
     }
 
     static string ResolveSourcePath(string folderPath, string[] candidates)

@@ -31,6 +31,9 @@ public class AttackController : MonoBehaviour
 
     void HandleAttackInput()
     {
+        if (stats == null || playerController == null)
+            return;
+
         // Không được đánh khi đang bị knockback
         if (selfKnockback != null && selfKnockback.IsKnocked)
             return;
@@ -57,8 +60,11 @@ public class AttackController : MonoBehaviour
 
     void Attack()
     {
-        if (attackPoint == null)
+        if (stats == null)
             return;
+
+        if (attackPoint == null)
+            attackPoint = transform;
 
         // Lấy combo hiện tại
         int comboIndex = 1;
