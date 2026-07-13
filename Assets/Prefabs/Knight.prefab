@@ -12,10 +12,13 @@ GameObject:
   - component: {fileID: 6532904320514944784}
   - component: {fileID: 7956097992712201876}
   - component: {fileID: 846311217888939289}
-  - component: {fileID: 3755770553177229050}
   - component: {fileID: 3376667625643286423}
+<<<<<<< HEAD
   - component: {fileID: 9103311833759115876}
   - component: {fileID: 408653698876107827}
+=======
+  - component: {fileID: 3962743190231166616}
+>>>>>>> origin/vund
   m_Layer: 0
   m_Name: Knight
   m_TagString: Untagged
@@ -162,26 +165,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0.008111107, y: -0.0087195765}
   m_Size: {x: 0.33622223, y: 0.9188218}
   m_Direction: 0
---- !u!114 &3755770553177229050
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4732108334705783073}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2b54abba909b354c8e8e87598a764d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  playerType: 0
-  moveSpeed: 6
-  jumpForce: 15
-  groundCheck: {fileID: 8962589647503442160}
-  groundRadius: 0.2
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
 --- !u!114 &3376667625643286423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -195,6 +178,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterType
   character: 0
+<<<<<<< HEAD
 --- !u!95 &9103311833759115876
 Animator:
   serializedVersion: 7
@@ -218,6 +202,9 @@ Animator:
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &408653698876107827
+=======
+--- !u!114 &3962743190231166616
+>>>>>>> origin/vund
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -226,6 +213,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4732108334705783073}
   m_Enabled: 1
   m_EditorHideFlags: 0
+<<<<<<< HEAD
   m_Script: {fileID: 11500000, guid: c4e5c95de7124b4193520d02268a1a58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAnimationSync
@@ -236,6 +224,19 @@ MonoBehaviour:
   deathSystem: {fileID: 0}
   speedReference: 6
   speedDamping: 0.08
+=======
+  m_Script: {fileID: 11500000, guid: b2b54abba909b354c8e8e87598a764d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  playerType: 0
+  moveSpeed: 6
+  jumpForce: 12
+  groundCheck: {fileID: 8962589647503442160}
+  groundRadius: 0.2
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+>>>>>>> origin/vund
 --- !u!1 &7079248950319593026
 GameObject:
   m_ObjectHideFlags: 0

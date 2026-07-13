@@ -2,51 +2,65 @@
 
 public class ComboController : MonoBehaviour
 {
-    [Header("Combo")]
-    public int maxCombo = 3;              // Số đòn tối đa trong combo
+    [Header("Combo Settings")]
+    [Tooltip("Số đòn tối đa trong chuỗi combo")]
+    public int maxCombo = 3;
 
-    public float comboResetTime = 0.8f;  // Thời gian reset combo
+    [Tooltip("Thời gian cho phép tiếp tục combo")]
+    public float comboResetTime = 0.5f;
 
-    private int comboStep;               // Đòn hiện tại
+    private int comboStep;
+    private float timer;
 
-    private float timer;                 // Đếm thời gian
+    // Combo hiện tại
+    public int CurrentCombo => comboStep;
 
-    public int CurrentCombo => comboStep; // Lấy combo hiện tại
-
-    void Update()
+    private void Update()
     {
-        // Không có combo thì không cần đếm
+        // Không có combo nào đang hoạt động
         if (comboStep <= 0)
             return;
 
         timer += Time.deltaTime;
 
-        // Hết thời gian thì reset combo
+        // Hết thời gian nối combo
         if (timer >= comboResetTime)
         {
             ResetCombo();
         }
     }
 
+    /// <summary>
+    /// Chuyển sang đòn đánh tiếp theo trong chuỗi combo.
+    /// Attack1 -> Attack2 -> Attack3
+    /// </summary>
     public int NextCombo()
     {
-        // Reset thời gian đếm
-        timer = 0;
+        timer = 0f;
 
-        // Tăng combo
-        comboStep++;
-
-        // Quay về combo 1 nếu vượt quá giới hạn
-        if (comboStep > maxCombo)
-            comboStep = 1;
+        // Nếu chưa đạt combo tối đa
+        if (comboStep < maxCombo)
+        {
+            comboStep++;
+        }
 
         return comboStep;
     }
 
+    /// <summary>
+    /// Kiểm tra combo đã đạt đòn cuối chưa.
+    /// </summary>
+    public bool IsComboFinished()
+    {
+        return comboStep >= maxCombo;
+    }
+
+    /// <summary>
+    /// Đặt lại combo về trạng thái ban đầu.
+    /// </summary>
     public void ResetCombo()
     {
-        // Đưa combo về ban đầu
         comboStep = 0;
-        timer = 0;
+        timer = 0f;
     }
 }

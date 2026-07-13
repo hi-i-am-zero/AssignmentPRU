@@ -5,47 +5,76 @@ public class KnockbackController : MonoBehaviour
 {
     private Rigidbody2D rb;
 
-    [Header("Knockback")]
-    public float knockbackDuration = 0.2f; // Thời gian bị hất văng
+    [Header("Knockback Settings")]
 
-    private bool isKnocked; // Trạng thái knockback
+    [Tooltip("Lực hất lên")]
+    public float upwardForce = 0.4f;
 
-    public bool IsKnocked => isKnocked; // Kiểm tra có đang bị knockback
+    [Tooltip("Thời gian bị knockback")]
+    public float knockbackDuration = 0.15f;
+
+    // Đang bị knockback
+    private bool isKnocked;
+
+    // Cho script khác kiểm tra trạng thái
+    public bool IsKnocked => isKnocked;
 
     private void Awake()
     {
-        // Lấy Rigidbody2D
         rb = GetComponent<Rigidbody2D>();
     }
 
+    /// <summary>
+    /// Áp dụng lực knockback
+    /// </summary>
     public void ApplyKnockback(Vector2 attackPosition, float force)
     {
-        // Đang bị knockback thì bỏ qua
+        // Tránh nhận nhiều knockback cùng lúc
         if (isKnocked)
             return;
 
-        // Tính hướng bị đẩy
+        // Hướng bị đẩy
         Vector2 direction =
             ((Vector2)transform.position - attackPosition).normalized;
 
-        // Dừng vận tốc hiện tại
+        // Hất nhẹ lên trên
+        direction.y = upwardForce;
+
+        direction.Normalize();
+
+        // Reset vận tốc hiện tại
         rb.linearVelocity = Vector2.zero;
 
-        // Đẩy nhân vật ra xa điểm tấn công
-        rb.AddForce(direction * force, ForceMode2D.Impulse);
+        // Thêm lực đẩy
+        rb.AddForce(
+            direction * force,
+            ForceMode2D.Impulse
+        );
 
-        // Bắt đầu thời gian knockback
         StartCoroutine(KnockbackRoutine());
     }
 
+    /// <summary>
+    /// Khóa điều khiển trong thời gian knockback
+    /// </summary>
     IEnumerator KnockbackRoutine()
     {
-        // Đánh dấu đang bị knockback
         isKnocked = true;
 
         yield return new WaitForSeconds(knockbackDuration);
 
-        // Kết thúc knockback
         isKnocked = false;
+    }
+
+    /// <summary>
+    /// Reset trạng thái knockback
+    /// </summary>
+    public void ResetKnockback()
+    {
+        StopAllCoroutines();
+
+        isKnocked = false;
+
+        rb.linearVelocity = Vector2.zero;
     }
 }
