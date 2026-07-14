@@ -106,7 +106,7 @@ public sealed class CharacterAnimationSync : MonoBehaviour
         if (body != null && hasSpeedParam)
         {
             float reference = Mathf.Max(0.01f, speedReference);
-            float targetSpeed = Mathf.Clamp01(Mathf.Abs(body.velocity.x) / reference);
+            float targetSpeed = Mathf.Clamp01(Mathf.Abs(body.linearVelocity.x) / reference);
             animator.SetFloat(SpeedHash, targetSpeed, speedDamping, Time.deltaTime);
         }
 
