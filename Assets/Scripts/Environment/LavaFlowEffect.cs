@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>Scrolls tiled lava sprite for flowing river animation.</summary>
+    /// <summary>Cuộn sprite lava tạo hiệu ứng chảy.</summary>
     [RequireComponent(typeof(SpriteRenderer))]
     public class LavaFlowEffect : MonoBehaviour
     {

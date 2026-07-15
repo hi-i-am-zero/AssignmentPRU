@@ -4,11 +4,12 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Character (P1 left / P2 right) + map (center) selection, then Fight.
+    /// Màn Select: P1 trái / Map giữa / P2 phải. Fight chỉ bật khi chọn đủ.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SelectUI : MonoBehaviour
     {
+        // 3 class cho phép chọn (được trùng nhau)
         static readonly CharacterType.Character[] Characters =
         {
             CharacterType.Character.Knight,
@@ -16,6 +17,7 @@ namespace SkyfallArena.GameFlow
             CharacterType.Character.Sorcerer
         };
 
+        // 5 map combat
         static readonly string[] MapSceneNames =
         {
             "Mountain",
@@ -33,12 +35,30 @@ namespace SkyfallArena.GameFlow
         Button[] p1Buttons;
         Button[] p2Buttons;
         Button[] mapButtons;
+        bool built;
+
+        void Awake()
+        {
+            BuildUiIfNeeded();
+        }
 
         void Start()
         {
-            BuildUi();
+            BuildUiIfNeeded();
             RefreshHighlights();
             RefreshFightButton();
+        }
+
+        void BuildUiIfNeeded()
+        {
+            if (built || transform.Find("SelectCanvas") != null)
+            {
+                built = true;
+                return;
+            }
+
+            BuildUi();
+            built = true;
         }
 
         void BuildUi()
@@ -69,6 +89,7 @@ namespace SkyfallArena.GameFlow
             BuildMapColumn(canvas.transform, new Vector2(0.34f, 0.18f), new Vector2(0.66f, 0.85f));
             BuildColumn(canvas.transform, "P2Column", "Player 2", new Vector2(0.70f, 0.18f), new Vector2(0.97f, 0.85f), false);
 
+            // Back → Title
             var backButton = UiFactory.CreateButton(
                 canvas.transform,
                 "BackButton",
@@ -101,6 +122,7 @@ namespace SkyfallArena.GameFlow
             rect.sizeDelta = Vector2.zero;
         }
 
+        // Cột chọn nhân vật (P1 hoặc P2)
         void BuildColumn(Transform parent, string name, string title, Vector2 anchorMin, Vector2 anchorMax, bool isP1)
         {
             var panel = UiFactory.CreatePanel(parent, name, new Color(0.12f, 0.14f, 0.2f, 0.9f), anchorMin, anchorMax);
@@ -154,6 +176,7 @@ namespace SkyfallArena.GameFlow
                 p2Buttons = buttons;
         }
 
+        // Cột chọn map
         void BuildMapColumn(Transform parent, Vector2 anchorMin, Vector2 anchorMax)
         {
             var panel = UiFactory.CreatePanel(parent, "MapColumn", new Color(0.1f, 0.16f, 0.18f, 0.9f), anchorMin, anchorMax);
@@ -198,6 +221,7 @@ namespace SkyfallArena.GameFlow
             }
         }
 
+        // Highlight nút đang chọn
         void RefreshHighlights()
         {
             for (int i = 0; i < Characters.Length; i++)
@@ -210,6 +234,7 @@ namespace SkyfallArena.GameFlow
                 UiFactory.SetButtonHighlight(mapButtons[i], mapChoice == MapSceneNames[i]);
         }
 
+        // Fight chỉ interactable khi đủ P1 + P2 + map
         void RefreshFightButton()
         {
             bool ready = p1Choice.HasValue && p2Choice.HasValue && !string.IsNullOrEmpty(mapChoice);
@@ -223,6 +248,7 @@ namespace SkyfallArena.GameFlow
                     : new Color(0.35f, 0.35f, 0.38f, 1f);
         }
 
+        // Lưu session rồi load map combat
         void OnFightPressed()
         {
             if (!p1Choice.HasValue || !p2Choice.HasValue || string.IsNullOrEmpty(mapChoice))

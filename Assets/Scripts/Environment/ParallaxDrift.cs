@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>Slow drift for background decor layers.</summary>
+    /// <summary>Trôi chậm lớp nền (parallax decor).</summary>
     public class ParallaxDrift : MonoBehaviour
     {
         [SerializeField] Vector2 amplitude = new Vector2(0.2f, 0.1f);

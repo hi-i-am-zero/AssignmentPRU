@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>Pulse sprite tint/alpha – lava glow, item markers, etc.</summary>
+    /// <summary>Nhấp nháy tint/alpha sprite (lava, marker item...).</summary>
     [RequireComponent(typeof(SpriteRenderer))]
     public class SpritePulse : MonoBehaviour
     {

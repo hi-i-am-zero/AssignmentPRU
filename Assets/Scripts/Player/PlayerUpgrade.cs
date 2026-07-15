@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Áp buff item vào gameplay: JumpBoost / AttackChain (damage) / ShieldWall (DR).
+/// </summary>
 public class PlayerUpgrade : MonoBehaviour
 {
     [Header("Upgrade Levels")]

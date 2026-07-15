@@ -5,7 +5,7 @@ using UnityEngine.Events;
 namespace SkyfallArena.Systems
 {
     /// <summary>
-    /// Applies Ring-Out Elimination behavior when a player dies.
+    /// Khi chết / rơi khỏi map: tắt combat, khóa Rigidbody, báo sự kiện loại khỏi trận.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(PlayerHealth))]

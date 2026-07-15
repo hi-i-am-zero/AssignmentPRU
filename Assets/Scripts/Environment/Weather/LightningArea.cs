@@ -4,6 +4,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Environment.Weather
 {
+    /// <summary>Vùng sét: gây damage định kỳ trong khu vực.</summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class LightningArea : MonoBehaviour
     {

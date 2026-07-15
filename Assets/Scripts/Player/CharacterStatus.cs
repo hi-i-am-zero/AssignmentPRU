@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Chỉ số runtime của nhân vật: tốc độ, HP, damage, range, cooldown, knockback.
+/// </summary>
 public class CharacterStatus : MonoBehaviour
 {
     [Header("Movement")]

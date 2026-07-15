@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>
-    /// Fixed orthographic camera sized to show the full arena for 2-4 player combat.
-    /// </summary>
+    /// <summary>Camera orthographic cố định, khung toàn arena.</summary>
     [RequireComponent(typeof(Camera))]
     public class MapCamera : MonoBehaviour
     {

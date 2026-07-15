@@ -1,6 +1,9 @@
 using SkyfallArena.Systems;
 using UnityEngine;
 
+/// <summary>
+/// Đồng bộ Animator: Speed, grounded, hurt, chết, block, charge.
+/// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Animator))]
 public sealed class CharacterAnimationSync : MonoBehaviour

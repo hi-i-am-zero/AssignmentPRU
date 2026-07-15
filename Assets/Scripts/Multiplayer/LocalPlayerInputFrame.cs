@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SkyfallArena.Multiplayer
 {
     /// <summary>
-    /// Snapshot of one player's input for a single frame.
+    /// Snapshot input 1 frame của 1 player (move, jump, attack 1–4, block).
     /// </summary>
     public struct LocalPlayerInputFrame
     {

@@ -2,10 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>
-    /// Visual Communication System – color-coded zone lighting.
-    /// Safe = Green, Hazard = Red, Item Spawn = Yellow.
-    /// </summary>
+    /// <summary>Màu đèn vùng: Safe xanh / Hazard đỏ / Item vàng.</summary>
     public static class ZoneLightColors
     {
         public static readonly Color Safe = new Color(0.2f, 1f, 0.3f, 1f);

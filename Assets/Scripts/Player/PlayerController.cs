@@ -6,6 +6,9 @@ using SkyfallArena.Multiplayer;
 using UnityEditor;
 #endif
 
+/// <summary>
+/// Di chuyển + nhảy theo input local (WASD / Arrows). Tôn trọng knockback và block.
+/// </summary>
 public class PlayerController : MonoBehaviour
 {
     private KnockbackController knockback;

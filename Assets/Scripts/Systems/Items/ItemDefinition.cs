@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace SkyfallArena.Systems.Items
 {
+    /// <summary>
+    /// ScriptableObject định nghĩa 1 loại item (tên, sprite, max level, mô tả từng cấp).
+    /// </summary>
     [CreateAssetMenu(fileName = "ItemDefinition", menuName = "Skyfall Arena/Items/Item Definition")]
     public sealed class ItemDefinition : ScriptableObject
     {

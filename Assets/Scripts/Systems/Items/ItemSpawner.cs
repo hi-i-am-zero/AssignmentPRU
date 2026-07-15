@@ -7,6 +7,9 @@ using ArenaEnvironment = Environment;
 
 namespace SkyfallArena.Systems.Items
 {
+    /// <summary>
+    /// Spawn item tại ItemSpawnPoint + drop khi đánh trúng (~20%).
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class ItemSpawner : MonoBehaviour
     {

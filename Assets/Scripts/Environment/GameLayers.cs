@@ -1,5 +1,6 @@
 namespace Environment
 {
+    /// <summary>Tên layer/tag dùng chung (Player, Ground, DeathZone...).</summary>
     public static class GameLayers
     {
         public const string Ground = "Ground";

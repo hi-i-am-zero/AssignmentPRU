@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SkyfallArena.Systems
 {
     /// <summary>
-    /// Stable runtime player id shared across systems.
+    /// ID player runtime (1 hoặc 2) dùng chung giữa các hệ thống.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerIdentity : MonoBehaviour

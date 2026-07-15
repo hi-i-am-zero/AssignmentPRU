@@ -5,6 +5,9 @@ using SkyfallArena.Systems.Items;
 using SkyfallArena.Multiplayer;
 using System.Collections.Generic;
 
+/// <summary>
+/// Combat: đọc phím attack, hitbox cận chiến / đạn Sorcerer, gây damage + knockback + SFX.
+/// </summary>
 public class AttackController : MonoBehaviour
 {
     [Header("Attack Settings")]
@@ -189,6 +192,8 @@ public class AttackController : MonoBehaviour
             animator.SetTrigger("Attack");
         }
 
+        SkyfallArena.Audio.GameAudio.Instance?.PlayAttack();
+
         if (ShouldUseSorcererProjectile())
         {
             FireSorcererProjectile(comboIndex);
@@ -286,7 +291,8 @@ public class AttackController : MonoBehaviour
         }
     }
 
-    public static bool TryApplyDamage(GameObject targetRoot, float damageAmount)
+        // Áp damage vào PlayerHealth (fallback IDamageable)
+        public static bool TryApplyDamage(GameObject targetRoot, float damageAmount)
     {
         if (targetRoot == null || damageAmount <= 0f)
             return false;

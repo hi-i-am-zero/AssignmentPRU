@@ -4,6 +4,9 @@ using UnityEngine;
 using ArenaEnvironment = Environment;
 using System.Collections.Generic;
 
+/// <summary>
+/// Đạn tầm xa Sorcerer (pool): bay theo hướng, gây damage + knockback khi chạm địch.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class SorcererProjectile : MonoBehaviour
 {

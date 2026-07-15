@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Environment.Weather
 {
+    /// <summary>Vùng gió: đẩy Rigidbody ngang khi đứng trong.</summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class WindZone : MonoBehaviour
     {

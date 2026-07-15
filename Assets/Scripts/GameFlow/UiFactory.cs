@@ -5,10 +5,13 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Shared runtime uGUI helpers for menu screens.
+    /// Helper tạo Canvas/Button/Text runtime cho Title, Select, Result.
     /// </summary>
     public static class UiFactory
     {
+        static Sprite whiteSprite;
+        static Font uiFont;
+
         public static Canvas CreateCanvas(string name, Transform parent = null)
         {
             var canvasGo = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -41,6 +44,40 @@ namespace SkyfallArena.GameFlow
 #endif
         }
 
+        public static Sprite GetWhiteSprite()
+        {
+            if (whiteSprite != null)
+                return whiteSprite;
+
+            var tex = Texture2D.whiteTexture;
+            whiteSprite = Sprite.Create(
+                tex,
+                new Rect(0f, 0f, tex.width, tex.height),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            whiteSprite.name = "UiWhiteSprite";
+            return whiteSprite;
+        }
+
+        public static Font GetUiFont()
+        {
+            if (uiFont != null)
+                return uiFont;
+
+            uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (uiFont == null)
+                uiFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            return uiFont;
+        }
+
+        static void ConfigureImage(Image image, Color color)
+        {
+            image.sprite = GetWhiteSprite();
+            image.type = Image.Type.Simple;
+            image.color = color;
+            image.raycastTarget = true;
+        }
+
         public static Image CreatePanel(Transform parent, string name, Color color, Vector2 anchorMin, Vector2 anchorMax)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
@@ -51,7 +88,7 @@ namespace SkyfallArena.GameFlow
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
             var image = go.GetComponent<Image>();
-            image.color = color;
+            ConfigureImage(image, color);
             return image;
         }
 
@@ -66,15 +103,14 @@ namespace SkyfallArena.GameFlow
             rect.offsetMax = Vector2.zero;
 
             var text = go.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (text.font == null)
-                text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.font = GetUiFont();
             text.text = content;
             text.fontSize = fontSize;
             text.alignment = alignment;
             text.color = color;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.raycastTarget = false;
             return text;
         }
 
@@ -90,7 +126,7 @@ namespace SkyfallArena.GameFlow
             rect.sizeDelta = size;
 
             var image = go.GetComponent<Image>();
-            image.color = new Color(0.18f, 0.42f, 0.72f, 1f);
+            ConfigureImage(image, new Color(0.18f, 0.42f, 0.72f, 1f));
 
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;
@@ -111,7 +147,7 @@ namespace SkyfallArena.GameFlow
             layout.preferredHeight = 52f;
 
             var image = go.GetComponent<Image>();
-            image.color = new Color(0.2f, 0.2f, 0.25f, 0.95f);
+            ConfigureImage(image, new Color(0.2f, 0.2f, 0.25f, 0.95f));
 
             var button = go.GetComponent<Button>();
             button.targetGraphic = image;

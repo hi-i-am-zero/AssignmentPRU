@@ -2,8 +2,10 @@ using UnityEngine;
 
 namespace Environment.Weather
 {
+    /// <summary>Loại thời tiết trên map.</summary>
     public enum WeatherType { Clear, Rain, Wind, Thunder, Storm }
 
+    /// <summary>Bật/tắt hiệu ứng thời tiết (mưa, gió, sấm...).</summary>
     public class WeatherManager : MonoBehaviour
     {
         [SerializeField] WeatherType currentWeather = WeatherType.Clear;

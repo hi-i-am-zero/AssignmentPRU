@@ -2,6 +2,9 @@
 using UnityEngine.SceneManagement;
 using TMPro;
 
+/// <summary>
+/// Menu cũ (panel chọn char/map). Flow hiện tại dùng TitleUI / SelectUI / GameSession.
+/// </summary>
 public class MainMenuManager : MonoBehaviour
 {
     [Header("Giao Diện (Panels)")]

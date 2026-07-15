@@ -4,7 +4,7 @@ namespace Environment
 {
     public enum AmbientParticleStyle { None, Stars, Snow, Embers }
 
-    /// <summary>Lightweight ambient particles (stars, snow, embers).</summary>
+    /// <summary>Particle môi trường nhẹ (sao, tuyết, tàn lửa).</summary>
     public class AmbientParticles : MonoBehaviour
     {
         [SerializeField] AmbientParticleStyle style = AmbientParticleStyle.None;

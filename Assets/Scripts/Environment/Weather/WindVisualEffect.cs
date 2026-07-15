@@ -2,9 +2,7 @@ using UnityEngine;
 
 namespace Environment.Weather
 {
-    /// <summary>
-    /// Visual wind streaks – horizontal particles showing wind direction.
-    /// </summary>
+    /// <summary>Particle gió ngang thể hiện hướng gió.</summary>
     [RequireComponent(typeof(ParticleSystem))]
     public class WindVisualEffect : MonoBehaviour
     {

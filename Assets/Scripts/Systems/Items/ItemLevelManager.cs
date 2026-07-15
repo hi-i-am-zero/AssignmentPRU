@@ -6,7 +6,7 @@ using UnityEngine.Events;
 namespace SkyfallArena.Systems.Items
 {
     /// <summary>
-    /// Tracks per-player item levels and notifies UI/gameplay listeners.
+    /// Theo dõi cấp skill từng player (max Lv3). Full rồi không nhặt thêm cùng loại.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ItemLevelManager : MonoBehaviour

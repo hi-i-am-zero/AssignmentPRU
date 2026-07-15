@@ -1,6 +1,9 @@
 using UnityEngine;
 using SkyfallArena.Multiplayer;
 
+/// <summary>
+/// Block: giữ I / Numpad5 — giảm damage + knockback, không đánh/di chuyển khi đang block.
+/// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerBlockController : MonoBehaviour
 {
@@ -63,5 +66,8 @@ public sealed class PlayerBlockController : MonoBehaviour
         isBlocking = value;
         if (animationSync != null)
             animationSync.SetBlocking(isBlocking);
+
+        if (isBlocking)
+            SkyfallArena.Audio.GameAudio.Instance?.PlayBlock();
     }
 }

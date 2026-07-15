@@ -4,7 +4,7 @@ using SkyfallArena.Systems;
 namespace SkyfallArena.Multiplayer
 {
     /// <summary>
-    /// Match HUD hook (control hints removed — Title/Select/Result handle UI flow).
+    /// Hook HUD trong trận (đã bỏ gợi ý phím; UI chính ở Title/Select/Result).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class MatchHud : MonoBehaviour

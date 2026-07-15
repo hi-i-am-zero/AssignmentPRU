@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SkyfallArena.Systems.Items
 {
     /// <summary>
-    /// Applies item buffs into PlayerUpgrade (jump / damage / damage reduction).
+    /// Cầu nối item → PlayerUpgrade: nhảy / sát thương / giảm damage.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerUpgradeBuffAdapter : MonoBehaviour, IBuffable

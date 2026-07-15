@@ -7,15 +7,15 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Top HP bars. Uses RectTransform width (not Image.Filled) so solid-color bars shrink correctly.
+    /// Thanh máu P1 (trái) / P2 (phải): fill theo HP + chip vàng thể hiện đoạn vừa mất.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerHealthBarsHud : MonoBehaviour
     {
         sealed class BarView
         {
-            public RectTransform fillRect;
-            public RectTransform chipRect;
+            public RectTransform fillRect;   // thanh HP thật
+            public RectTransform chipRect;   // vệt damage tạm
             public Image fillImage;
             public Image chipImage;
             public Text label;

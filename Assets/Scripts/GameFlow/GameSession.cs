@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Persistent match selections and last result across scene loads.
+    /// Lưu lựa chọn P1/P2/map và kết quả trận giữa các scene (DontDestroyOnLoad).
     /// </summary>
     public sealed class GameSession : MonoBehaviour
     {
@@ -23,11 +23,13 @@ namespace SkyfallArena.GameFlow
             }
         }
 
+        // Lựa chọn trước khi Fight
         public CharacterType.Character Player1Character { get; private set; } = CharacterType.Character.Knight;
         public CharacterType.Character Player2Character { get; private set; } = CharacterType.Character.Ninja;
         public string SelectedMapSceneName { get; private set; } = "Mountain";
         public bool HasMatchSelection { get; private set; }
 
+        // Kết quả trận vừa kết thúc
         public int LastWinnerPlayerId { get; private set; }
         public int LastAliveCount { get; private set; }
         public bool HasLastResult { get; private set; }
@@ -67,26 +69,17 @@ namespace SkyfallArena.GameFlow
             DontDestroyOnLoad(gameObject);
         }
 
-        public void SetPlayer1Character(CharacterType.Character character)
-        {
-            Player1Character = character;
-        }
+        public void SetPlayer1Character(CharacterType.Character character) => Player1Character = character;
+        public void SetPlayer2Character(CharacterType.Character character) => Player2Character = character;
+        public void SetSelectedMap(string mapSceneName) => SelectedMapSceneName = mapSceneName;
 
-        public void SetPlayer2Character(CharacterType.Character character)
-        {
-            Player2Character = character;
-        }
-
-        public void SetSelectedMap(string mapSceneName)
-        {
-            SelectedMapSceneName = mapSceneName;
-        }
-
+        // Đánh dấu đã chọn đủ để vào map
         public void ConfirmMatchSelection()
         {
             HasMatchSelection = !string.IsNullOrEmpty(SelectedMapSceneName);
         }
 
+        // Reset lựa chọn (về màn Select)
         public void ClearMatchSelection()
         {
             HasMatchSelection = false;
@@ -109,11 +102,9 @@ namespace SkyfallArena.GameFlow
             LastAliveCount = 0;
         }
 
-        public void LoadTitle()
-        {
-            SceneManager.LoadScene(TitleSceneName);
-        }
+        public void LoadTitle() => SceneManager.LoadScene(TitleSceneName);
 
+        // Về chọn nhân vật/map — xóa kết quả + lựa chọn cũ
         public void LoadSelect()
         {
             ClearLastResult();
@@ -121,6 +112,7 @@ namespace SkyfallArena.GameFlow
             SceneManager.LoadScene(SelectSceneName);
         }
 
+        // Load đúng map đã chọn trong Select
         public void LoadSelectedMap()
         {
             ConfirmMatchSelection();

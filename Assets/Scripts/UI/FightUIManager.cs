@@ -3,6 +3,9 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement; // Bắt buộc phải có để load Scene
 
+/// <summary>
+/// HUD trận cũ (HP fill + timer). Flow hiện tại dùng PlayerHealthBarsHud + ResultUI.
+/// </summary>
 public class FightUIManager : MonoBehaviour
 {
     [Header("Player 1")]

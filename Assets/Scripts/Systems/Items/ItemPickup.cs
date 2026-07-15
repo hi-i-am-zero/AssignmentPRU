@@ -7,6 +7,9 @@ using SkyfallArena.Systems;
 
 namespace SkyfallArena.Systems.Items
 {
+    /// <summary>
+    /// Item trên map: chạm player → tăng cấp skill (nếu chưa max).
+    /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Collider2D))]
     public sealed class ItemPickup : MonoBehaviour

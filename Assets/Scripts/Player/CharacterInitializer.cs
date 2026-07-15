@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Gán chỉ số theo class: Knight / Ninja / Sorcerer (HP, damage, range, cooldown...).
+/// </summary>
 public class CharacterInitializer : MonoBehaviour
 {
     // Loại nhân vật (Knight, Ninja, Sorcerer)

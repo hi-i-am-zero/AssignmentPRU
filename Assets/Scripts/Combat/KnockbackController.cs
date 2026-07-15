@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// Hất văng nhân vật khi bị đánh; khóa di chuyển trong lúc knockback.
+/// </summary>
 public class KnockbackController : MonoBehaviour
 {
     private Rigidbody2D rb;

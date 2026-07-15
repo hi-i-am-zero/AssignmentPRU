@@ -7,7 +7,7 @@ using SkyfallArena.Multiplayer;
 namespace SkyfallArena.Systems
 {
     /// <summary>
-    /// Determines match winner based on remaining non-eliminated players.
+    /// Theo dõi DeathSystem: còn ≤1 người sống → MatchEnded (thắng/thua/hòa).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class MatchResultSystem : MonoBehaviour

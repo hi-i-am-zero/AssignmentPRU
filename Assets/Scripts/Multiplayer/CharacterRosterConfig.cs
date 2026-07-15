@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace SkyfallArena.Multiplayer
 {
+    /// <summary>
+    /// ScriptableObject: map Character → prefab + thứ tự chọn nhân vật.
+    /// </summary>
     [CreateAssetMenu(fileName = "CharacterRosterConfig", menuName = "Skyfall Arena/Multiplayer/Character Roster")]
     public sealed class CharacterRosterConfig : ScriptableObject
     {

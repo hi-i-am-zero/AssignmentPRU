@@ -3,6 +3,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Environment
 {
+    /// <summary>Điểm spawn item trên map (ItemSpawner đọc danh sách này).</summary>
     [DisallowMultipleComponent]
     public class ItemSpawnPoint : MonoBehaviour
     {

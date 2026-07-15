@@ -6,7 +6,8 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Post-match overlay: winner/loser + return to character/map select only.
+    /// Overlay thắng/thua: khóa combat, hiện kết quả.
+    /// Character Select → về Select; Out → thoát game.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ResultUI : MonoBehaviour
@@ -38,6 +39,7 @@ namespace SkyfallArena.GameFlow
                 matchResultSystem.MatchEnded -= HandleMatchEnded;
         }
 
+        // Gọi khi còn ≤1 người sống
         void HandleMatchEnded(int winnerPlayerId, int aliveCount)
         {
             if (shown)
@@ -53,6 +55,7 @@ namespace SkyfallArena.GameFlow
             ShowOverlay(winnerPlayerId, aliveCount);
         }
 
+        // Tắt điều khiển combat sau khi hết trận
         static void FreezeCombatants()
         {
             var controllers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
@@ -119,6 +122,7 @@ namespace SkyfallArena.GameFlow
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
 
+            // Về màn chọn nhân vật/map
             var selectButton = UiFactory.CreateButton(
                 panel.transform,
                 "SelectAgainButton",
@@ -128,6 +132,7 @@ namespace SkyfallArena.GameFlow
                 () => GameSession.Instance.LoadSelect());
             PlaceButton(selectButton.GetComponent<RectTransform>(), new Vector2(0.06f, 0.07f), new Vector2(0.48f, 0.28f));
 
+            // Thoát Play / thoát build
             var outButton = UiFactory.CreateButton(
                 panel.transform,
                 "OutButton",

@@ -9,7 +9,7 @@ using SkyfallArena.Systems.Items;
 namespace SkyfallArena.Multiplayer
 {
     /// <summary>
-    /// Handles local join flow, character selection, player spawning and per-player input publishing.
+    /// Local 1v1: spawn 2 player từ session, publish input keyboard (WASD / Arrows + attack keys).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class LocalMultiplayerManager : MonoBehaviour
@@ -212,7 +212,7 @@ namespace SkyfallArena.Multiplayer
         }
 
         /// <summary>
-        /// Starts a 2-player match immediately from pre-selected characters (menu flow).
+        /// Bắt đầu trận ngay từ nhân vật đã chọn ở màn Select (bỏ lobby in-arena).
         /// </summary>
         public void StartMatchFromSession(CharacterType.Character player1Character, CharacterType.Character player2Character)
         {

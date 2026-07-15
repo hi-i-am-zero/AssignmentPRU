@@ -3,7 +3,7 @@ using System;
 namespace SkyfallArena.Multiplayer
 {
     /// <summary>
-    /// Read-only input stream exposed per local player.
+    /// Interface đọc input 1 player local (LatestFrame + sự kiện mỗi frame).
     /// </summary>
     public interface ILocalPlayerInputSource
     {
@@ -13,7 +13,7 @@ namespace SkyfallArena.Multiplayer
     }
 
     /// <summary>
-    /// Optional consumer contract for systems that react to local input.
+    /// Interface nhận input (nếu hệ thống muốn subscribe kiểu sink).
     /// </summary>
     public interface ILocalPlayerInputSink
     {

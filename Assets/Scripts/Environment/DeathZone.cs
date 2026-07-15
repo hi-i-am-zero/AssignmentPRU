@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
+    /// <summary>Vùng chết: chạm vào → loại player khỏi trận.</summary>
     [RequireComponent(typeof(Collider2D))]
     public class DeathZone : MonoBehaviour
     {

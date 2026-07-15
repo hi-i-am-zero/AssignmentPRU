@@ -3,6 +3,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Environment
 {
+    /// <summary>Vùng nguy hiểm: gây damage theo thời gian khi đứng trong.</summary>
     [RequireComponent(typeof(Collider2D))]
     public class HazardZone : MonoBehaviour
     {

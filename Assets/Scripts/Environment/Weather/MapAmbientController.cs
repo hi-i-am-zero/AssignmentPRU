@@ -3,9 +3,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Environment.Weather
 {
-    /// <summary>
-    /// Tints global lighting when weather changes (darker during rain/storm).
-    /// </summary>
+    /// <summary>Đổi màu ánh sáng môi trường theo thời tiết (mưa/bão tối hơn).</summary>
     public class MapAmbientController : MonoBehaviour
     {
         [SerializeField] Color clearAmbient = Color.white;

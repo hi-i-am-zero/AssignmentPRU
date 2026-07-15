@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
+    /// <summary>Platform trơn: giảm ma sát / trượt khi đứng.</summary>
     [RequireComponent(typeof(PlatformEffector2D))]
     [RequireComponent(typeof(BoxCollider2D))]
     public class SlipperyPlatform : MonoBehaviour

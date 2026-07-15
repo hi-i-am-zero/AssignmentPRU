@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SkyfallArena.Systems.Items
 {
     /// <summary>
-    /// Runtime payload passed from the item system to buff handlers.
+    /// Payload khi nhặt item: playerId, loại, level mới/cũ, definition.
     /// </summary>
     public readonly struct ItemBuffContext
     {

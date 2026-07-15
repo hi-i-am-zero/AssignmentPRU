@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace SkyfallArena.Multiplayer
 {
     /// <summary>
-    /// Global registry so other systems can discover input sources by player id.
+    /// Đăng ký nguồn input theo playerId để hệ khác tra cứu.
     /// </summary>
     public static class LocalInputSourceRegistry
     {

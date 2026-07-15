@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Starts a local match from GameSession selections (or editor fallback).
+    /// Khi vào map: đọc GameSession (hoặc fallback Knight/Ninja) rồi spawn trận ngay.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class MatchBootstrap : MonoBehaviour
@@ -19,6 +19,7 @@ namespace SkyfallArena.GameFlow
             if (multiplayerManager == null)
                 multiplayerManager = FindFirstObjectByType<LocalMultiplayerManager>();
 
+            // Đảm bảo có UI kết quả + thanh máu
             if (GetComponent<ResultUI>() == null)
                 gameObject.AddComponent<ResultUI>();
 
@@ -50,10 +51,16 @@ namespace SkyfallArena.GameFlow
             }
             else
             {
+                // Play thẳng map trong Editor vẫn test được
                 Debug.Log("[MatchBootstrap] No session selection — using editor fallback characters.");
             }
 
             multiplayerManager.StartMatchFromSession(p1, p2);
+
+            // Phát ambience đúng map
+            var audio = SkyfallArena.Audio.GameAudio.Instance;
+            if (audio != null)
+                audio.PlayAmbienceForScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
         }
     }
 }

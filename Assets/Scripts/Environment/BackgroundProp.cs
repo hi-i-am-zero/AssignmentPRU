@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>Decorative background element – slow drift, no collision.</summary>
+    /// <summary>Decor nền: trôi chậm, không va chạm.</summary>
     public class BackgroundProp : MonoBehaviour
     {
         [SerializeField] float driftX = 0.08f;

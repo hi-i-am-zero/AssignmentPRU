@@ -1,23 +1,36 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Title screen: game name + Play.
+    /// Màn Title: tên game + nút Play → Select.
+    /// UI tạo runtime (Screen Space Overlay), xem ở tab Game khi Play.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class TitleUI : MonoBehaviour
     {
-        void Start()
+        bool built;
+
+        void Awake() => BuildUiIfNeeded();
+        void Start() => BuildUiIfNeeded();
+
+        void BuildUiIfNeeded()
         {
+            if (built || transform.Find("TitleCanvas") != null)
+            {
+                built = true;
+                return;
+            }
+
             BuildUi();
+            built = true;
         }
 
         void BuildUi()
         {
             var canvas = UiFactory.CreateCanvas("TitleCanvas", transform);
 
+            // Nền tối toàn màn
             UiFactory.CreatePanel(
                 canvas.transform,
                 "Background",
@@ -51,6 +64,7 @@ namespace SkyfallArena.GameFlow
             subtitleRect.offsetMin = Vector2.zero;
             subtitleRect.offsetMax = Vector2.zero;
 
+            // Play → màn chọn nhân vật & map
             UiFactory.CreateButton(
                 canvas.transform,
                 "PlayButton",

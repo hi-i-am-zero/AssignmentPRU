@@ -7,7 +7,7 @@ using SkyfallArena.Multiplayer;
 namespace SkyfallArena.Systems
 {
     /// <summary>
-    /// Stores and updates HP for one player. Exposes events for UI/VFX systems.
+    /// HP player: TakeDamage / Heal / Kill. Event cho HUD & DeathSystem.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerHealth : MonoBehaviour, ArenaEnvironment.IDamageable
@@ -154,7 +154,10 @@ namespace SkyfallArena.Systems
             onDamaged.Invoke(PlayerId, amount, currentHealth);
 
             if (!Mathf.Approximately(previous, currentHealth))
+            {
+                SkyfallArena.Audio.GameAudio.Instance?.PlayDamaged();
                 BroadcastHealthChanged();
+            }
 
             if (currentHealth <= 0f)
                 HandleHealthDepleted(false);

@@ -6,7 +6,7 @@ using ArenaEnvironment = Environment;
 namespace SkyfallArena.Systems
 {
     /// <summary>
-    /// Detects when a player falls out of arena bounds and routes to DeathSystem.
+    /// Phát hiện rơi khỏi arena (Y thấp / DeathZone) → gọi DeathSystem.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(PlayerHealth))]

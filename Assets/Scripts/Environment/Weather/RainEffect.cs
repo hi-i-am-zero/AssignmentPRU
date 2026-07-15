@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Environment.Weather
 {
+    /// <summary>Hiệu ứng mưa (particle / visual).</summary>
     public class RainEffect : MonoBehaviour
     {
         [SerializeField] ParticleSystem rainParticles;

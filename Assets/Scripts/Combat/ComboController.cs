@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Theo dõi bước combo Attack_1..4; hết thời gian thì reset về 0.
+/// </summary>
 public class ComboController : MonoBehaviour
 {
     [Header("Combo Settings")]

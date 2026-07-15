@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Environment
 {
+    /// <summary>Quản lý arena: spawn point, biên, hazard/death zone trên map.</summary>
     public class ArenaManager : MonoBehaviour
     {
         [SerializeField] string mapName = "Arena";

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
+    /// <summary>Điểm spawn P1/P2 khi bắt đầu trận.</summary>
     [DisallowMultipleComponent]
     public class PlayerSpawnPoint : MonoBehaviour
     {

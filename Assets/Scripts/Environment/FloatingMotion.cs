@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>Gentle vertical bob for cloud / floating platforms.</summary>
+    /// <summary>Dao động nhẹ theo Y (mây / platform nổi).</summary>
     public class FloatingMotion : MonoBehaviour
     {
         [SerializeField] float amplitudeY = 0.07f;

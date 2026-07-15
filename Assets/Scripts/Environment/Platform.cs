@@ -3,6 +3,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Environment
 {
+    /// <summary>Platform đứng được (ground / safe zone).</summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public class Platform : MonoBehaviour
     {

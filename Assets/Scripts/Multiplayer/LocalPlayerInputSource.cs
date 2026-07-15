@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SkyfallArena.Multiplayer
 {
     /// <summary>
-    /// Runtime component attached to spawned player objects to publish input frames.
+    /// Gắn trên player đã spawn: nhận và phát frame input từ LocalMultiplayerManager.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class LocalPlayerInputSource : MonoBehaviour, ILocalPlayerInputSource

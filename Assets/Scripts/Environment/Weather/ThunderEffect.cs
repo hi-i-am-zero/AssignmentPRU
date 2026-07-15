@@ -4,6 +4,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Environment.Weather
 {
+    /// <summary>Hiệu ứng sấm (flash + có thể kèm SFX).</summary>
     public class ThunderEffect : MonoBehaviour
     {
         [SerializeField] float minInterval = 4f;

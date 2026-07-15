@@ -1,7 +1,7 @@
 namespace SkyfallArena.Systems.Items
 {
     /// <summary>
-    /// Member 1 buff systems should implement this interface to consume item buffs.
+    /// Interface nhận buff từ item (PlayerUpgradeBuffAdapter implement).
     /// </summary>
     public interface IBuffable
     {
