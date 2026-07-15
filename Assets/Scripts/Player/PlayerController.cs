@@ -1,16 +1,17 @@
-﻿using UnityEngine;
+using UnityEngine;
 using SkyfallArena.Systems.Items;
 using SkyfallArena.Systems;
+using SkyfallArena.Multiplayer;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 public class PlayerController : MonoBehaviour
 {
-    // Quản lý trạng thái bị hất văng
     private KnockbackController knockback;
+    private LocalPlayerInputSource inputSource;
+    private PlayerBlockController blockController;
 
-    // Xác định người chơi để gán bộ phím điều khiển phù hợp
     public enum PlayerType
     {
         Player1,
@@ -40,11 +41,7 @@ public class PlayerController : MonoBehaviour
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
-
-    // Trạng thái nhân vật đang đứng trên mặt đất
     private bool isGrounded;
-
-    // Giá trị di chuyển ngang (-1, 0, 1)
     private float horizontal;
 
     private void Awake()
@@ -54,109 +51,85 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        // Lấy các component cần sử dụng
         knockback = GetComponent<KnockbackController>();
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        inputSource = GetComponent<LocalPlayerInputSource>();
+        blockController = GetComponent<PlayerBlockController>();
     }
 
     private void Update()
     {
-        // Thứ tự xử lý mỗi frame
         CheckGround();
         GetInput();
         Move();
         Jump();
     }
 
-    /// <summary>
-    /// Nhận input từ bàn phím dựa theo PlayerType
-    /// Player 1:
-    ///     A = Trái
-    ///     D = Phải
-    ///     W = Nhảy
-    ///
-    /// Player 2:
-    ///     ← = Trái
-    ///     → = Phải
-    ///     ↑ = Nhảy
-    /// </summary>
     void GetInput()
     {
-        horizontal = 0;
+        horizontal = 0f;
 
+        // Keyboard-first scheme: read keys by playerType for same-frame reliability.
         if (playerType == PlayerType.Player1)
         {
             if (Input.GetKey(KeyCode.A))
-                horizontal = -1;
-
+                horizontal = -1f;
             if (Input.GetKey(KeyCode.D))
-                horizontal = 1;
+                horizontal = 1f;
         }
         else
         {
             if (Input.GetKey(KeyCode.LeftArrow))
-                horizontal = -1;
-
+                horizontal = -1f;
             if (Input.GetKey(KeyCode.RightArrow))
-                horizontal = 1;
+                horizontal = 1f;
         }
     }
 
-    /// <summary>
-    /// Điều khiển di chuyển ngang của nhân vật
-    /// Không cho phép di chuyển khi đang bị knockback
-    /// </summary>
     void Move()
     {
         if (knockback != null && knockback.IsKnocked)
             return;
 
-        rb.linearVelocity = new Vector2(
-            horizontal * moveSpeed,
-            rb.linearVelocity.y
-        );
+        if (blockController != null && blockController.IsBlocking)
+        {
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+            return;
+        }
 
+        rb.linearVelocity = new Vector2(horizontal * moveSpeed, rb.linearVelocity.y);
         Flip(horizontal);
     }
 
-    /// <summary>
-    /// Xử lý nhảy.
-    /// Chỉ cho phép nhảy khi đang đứng trên mặt đất.
-    /// </summary>
     void Jump()
     {
         if (!isGrounded)
             return;
 
+        if (blockController != null && blockController.IsBlocking)
+            return;
+
+        bool jumpPressed;
         if (playerType == PlayerType.Player1)
-        {
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                rb.linearVelocity = new Vector2(
-                    rb.linearVelocity.x,
-                    jumpForce
-                );
-            }
-        }
+            jumpPressed = Input.GetKeyDown(KeyCode.W);
         else
-        {
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                rb.linearVelocity = new Vector2(
-                    rb.linearVelocity.x,
-                    jumpForce
-                );
-            }
-        }
+            jumpPressed = Input.GetKeyDown(KeyCode.UpArrow);
+
+        if (!jumpPressed)
+            return;
+
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
     }
 
-    /// <summary>
-    /// Kiểm tra nhân vật có đang chạm đất hay không.
-    /// Dùng OverlapCircle để phát hiện va chạm với Ground Layer.
-    /// </summary>
     void CheckGround()
     {
+        if (groundCheck == null)
+        {
+            isGrounded = true;
+            return;
+        }
+
         isGrounded = Physics2D.OverlapCircle(
             groundCheck.position,
             groundRadius,
@@ -164,40 +137,39 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-    /// <summary>
-    /// Lật hướng nhân vật theo hướng di chuyển.
-    /// Dùng SpriteRenderer để tránh ảnh hưởng Collider.
-    /// </summary>
     void Flip(float direction)
     {
-        if (direction > 0)
+        if (spriteRenderer == null)
+            return;
+
+        if (direction > 0f)
             spriteRenderer.flipX = false;
-        else if (direction < 0)
+        else if (direction < 0f)
             spriteRenderer.flipX = true;
     }
 
-    /// <summary>
-    /// Hiển thị vùng Ground Check trong Scene View.
-    /// Chỉ dùng để debug khi thiết kế map.
-    /// </summary>
     private void OnDrawGizmosSelected()
     {
         if (groundCheck == null)
             return;
 
         Gizmos.color = Color.green;
-
-        Gizmos.DrawWireSphere(
-            groundCheck.position,
-            groundRadius
-        );
+        Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
     }
 
     void EnsureCombatAndAnimationSetup()
     {
         int playerLayer = LayerMask.NameToLayer(Environment.GameLayers.Player);
         if (playerLayer >= 0)
+        {
             gameObject.layer = playerLayer;
+            var transforms = GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                if (transforms[i] != null)
+                    transforms[i].gameObject.layer = playerLayer;
+            }
+        }
 
         if (GetComponent<CharacterStatus>() == null)
             gameObject.AddComponent<CharacterStatus>();
@@ -222,6 +194,9 @@ public class PlayerController : MonoBehaviour
 
         if (GetComponent<PlayerUpgradeBuffAdapter>() == null)
             gameObject.AddComponent<PlayerUpgradeBuffAdapter>();
+
+        if (GetComponent<PlayerBlockController>() == null)
+            gameObject.AddComponent<PlayerBlockController>();
 
         var animator = GetComponent<Animator>();
         if (animator == null)

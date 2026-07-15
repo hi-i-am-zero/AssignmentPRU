@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using ArenaEnvironment = Environment;
+using SkyfallArena.Systems;
 using SkyfallArena.Systems.Items;
+using SkyfallArena.Multiplayer;
 using System.Collections.Generic;
 
 public class AttackController : MonoBehaviour
 {
     [Header("Attack Settings")]
-    public Transform attackPoint;      // Điểm xuất phát đòn đánh
-    public LayerMask playerLayer;      // Layer chứa các Player có thể bị đánh
+    public Transform attackPoint;
+    public LayerMask playerLayer;
 
     [Header("Item Drop On Hit")]
     [SerializeField] bool dropItemOnHit = true;
@@ -24,24 +26,31 @@ public class AttackController : MonoBehaviour
     [SerializeField] Color sorcererProjectileTint = new Color(0.65f, 0.9f, 1f, 0.95f);
     [SerializeField] Sprite sorcererProjectileType1Sprite;
     [SerializeField] Sprite sorcererProjectileType2Sprite;
+    [SerializeField] LayerMask sorcererProjectileBlockLayers;
 
-    // Các component cần dùng cho hệ thống combat
-    private CharacterStatus stats;
-    private PlayerController playerController;
-    private ComboController comboController;
-    private KnockbackController selfKnockback;
-    private Animator animator;
-    private SpriteRenderer spriteRenderer;
-    private CharacterType characterType;
+    [Header("Hit Feel")]
+    [SerializeField, Min(0f)] float hitStopDuration = 0.045f;
+    [SerializeField] bool requireFacingTarget = true;
+    [SerializeField, Range(-1f, 1f)] float minFacingDot = -0.15f;
 
-    // Thời điểm được phép thực hiện đòn đánh tiếp theo
-    private float nextAttackTime;
-    private float cachedArenaWidth;
-    private float nextArenaWidthSampleTime;
+    CharacterStatus stats;
+    PlayerController playerController;
+    ComboController comboController;
+    KnockbackController selfKnockback;
+    Animator animator;
+    SpriteRenderer spriteRenderer;
+    CharacterType characterType;
+    LocalPlayerInputSource inputSource;
+    PlayerBlockController blockController;
 
-    private void Awake()
+    float nextAttackTime;
+    float cachedArenaWidth;
+    float nextArenaWidthSampleTime;
+    float hitStopUntil;
+    readonly Collider2D[] overlapBuffer = new Collider2D[16];
+
+    void Awake()
     {
-        // Lấy các component trên cùng GameObject
         stats = GetComponent<CharacterStatus>();
         playerController = GetComponent<PlayerController>();
         comboController = GetComponent<ComboController>();
@@ -49,59 +58,121 @@ public class AttackController : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         characterType = GetComponent<CharacterType>();
+        inputSource = GetComponent<LocalPlayerInputSource>();
+        blockController = GetComponent<PlayerBlockController>();
 
         if (itemSpawner == null)
             itemSpawner = FindFirstObjectByType<ItemSpawner>();
+
+        if (sorcererProjectileBlockLayers.value == 0)
+            sorcererProjectileBlockLayers = LayerMask.GetMask(ArenaEnvironment.GameLayers.Ground);
+
+        EnsurePlayerLayerMask();
     }
 
-    private void Update()
+    void EnsurePlayerLayerMask()
     {
-        // Kiểm tra input đánh mỗi frame
+        if (playerLayer.value != 0)
+            return;
+
+        int mask = LayerMask.GetMask(ArenaEnvironment.GameLayers.Player);
+        if (mask != 0)
+            playerLayer = mask;
+    }
+
+    void Update()
+    {
+        if (Time.time < hitStopUntil)
+            return;
+
         HandleAttackInput();
     }
 
-    /// <summary>
-    /// Nhận input tấn công của từng người chơi
-    /// Player 1: F
-    /// Player 2: Keypad 0
-    /// Đồng thời kiểm tra trạng thái knockback và cooldown.
-    /// </summary>
     void HandleAttackInput()
     {
         if (stats == null || playerController == null)
             return;
 
-        // Không cho đánh khi đang bị hất văng
         if (selfKnockback != null && selfKnockback.IsKnocked)
             return;
 
-        bool attackPressed;
-        if (playerController.playerType == PlayerController.PlayerType.Player1)
-            attackPressed = Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J);
-        else
-            attackPressed = Input.GetKeyDown(KeyCode.Keypad0)
-                || Input.GetKeyDown(KeyCode.RightControl)
-                || Input.GetKeyDown(KeyCode.Slash);
-
-        if (!attackPressed)
+        if (blockController != null && blockController.IsBlocking)
             return;
 
-        // Kiểm tra thời gian hồi chiêu
+        int attackSlot = ReadAttackSlotPressed();
+        if (attackSlot <= 0)
+            return;
+
+        if (!IsAttackSlotAllowed(attackSlot))
+            return;
+
         if (Time.time < nextAttackTime)
             return;
 
-        nextAttackTime = Time.time + stats.attackCooldown;
-        Attack();
+        EnsureCombatStatsReady();
+        nextAttackTime = Time.time + Mathf.Max(0.05f, stats.attackCooldown);
+        Attack(attackSlot);
     }
 
-    /// <summary>
-    /// Thực hiện đòn đánh:
-    /// - Tăng combo
-    /// - Chạy animation
-    /// - Tìm mục tiêu trong phạm vi đánh
-    /// - Áp dụng knockback + damage
-    /// </summary>
-    void Attack()
+    void EnsureCombatStatsReady()
+    {
+        if (stats == null)
+            stats = GetComponent<CharacterStatus>();
+
+        if (stats == null)
+            return;
+
+        if (stats.damage > 0 && stats.attackRange > 0f)
+            return;
+
+        var initializer = GetComponent<CharacterInitializer>();
+        if (initializer != null)
+            initializer.ApplyStats();
+
+        if (stats.damage <= 0)
+            stats.damage = 15;
+        if (stats.attackRange <= 0f)
+            stats.attackRange = 1.25f;
+        if (stats.attackCooldown <= 0f)
+            stats.attackCooldown = 0.4f;
+        if (stats.knockbackForce <= 0f)
+            stats.knockbackForce = 6f;
+    }
+
+    int ReadAttackSlotPressed()
+    {
+        if (playerController.playerType == PlayerController.PlayerType.Player1)
+        {
+            if (Input.GetKeyDown(KeyCode.J)) return 1;
+            if (Input.GetKeyDown(KeyCode.K)) return 2;
+            if (Input.GetKeyDown(KeyCode.L)) return 3;
+            if (Input.GetKeyDown(KeyCode.U)) return 4;
+            return 0;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Keypad1)) return 1;
+        if (Input.GetKeyDown(KeyCode.Keypad2)) return 2;
+        if (Input.GetKeyDown(KeyCode.Keypad3)) return 3;
+        if (Input.GetKeyDown(KeyCode.Keypad4)) return 4;
+        return 0;
+    }
+
+    bool IsAttackSlotAllowed(int attackSlot)
+    {
+        int maxCombo = comboController != null ? Mathf.Max(1, comboController.maxCombo) : 3;
+        if (attackSlot < 1 || attackSlot > maxCombo)
+            return false;
+
+        if (attackSlot == 4)
+        {
+            return characterType != null
+                && characterType.character == CharacterType.Character.Sorcerer;
+        }
+
+        return true;
+    }
+
+    void Attack(int comboIndex)
     {
         if (stats == null)
             return;
@@ -109,14 +180,9 @@ public class AttackController : MonoBehaviour
         if (attackPoint == null)
             attackPoint = transform;
 
-        // Lấy đòn hiện tại trong chuỗi combo
-        int comboIndex = 1;
         if (comboController != null)
-            comboIndex = comboController.NextCombo();
+            comboController.SetComboStep(comboIndex);
 
-        Debug.Log(gameObject.name + " Combo " + comboIndex);
-
-        // Chạy animation đánh
         if (animator != null)
         {
             animator.SetInteger("Combo", comboIndex);
@@ -129,13 +195,14 @@ public class AttackController : MonoBehaviour
             return;
         }
 
-        // Tìm tất cả mục tiêu trong vùng đánh
         Vector2 attackCenter = GetAttackCenter();
-        Collider2D[] targets = ReadTargetsInRange(attackCenter, stats.attackRange);
+        float radius = GetEffectiveAttackRange();
+        int hitCount = ReadTargetsInRange(attackCenter, radius);
 
         var processedTargets = new HashSet<GameObject>();
-        foreach (Collider2D target in targets)
+        for (int i = 0; i < hitCount; i++)
         {
+            Collider2D target = overlapBuffer[i];
             if (target == null)
                 continue;
 
@@ -146,55 +213,119 @@ public class AttackController : MonoBehaviour
             if (!processedTargets.Add(targetRoot))
                 continue;
 
-            // Chỉ xử lý mục tiêu là player.
-            if (targetRoot.GetComponent<PlayerController>() == null)
-                continue;
-
-            // Không cho phép tự đánh chính mình
             if (targetRoot == gameObject)
                 continue;
 
-            // Chỉ gây sát thương cho mục tiêu ở phía trước mặt nhân vật
-            Vector2 directionToTarget = targetRoot.transform.position - transform.position;
-            if (spriteRenderer != null)
-            {
-                if (!spriteRenderer.flipX && directionToTarget.x < 0f)
-                    continue;
-                if (spriteRenderer.flipX && directionToTarget.x > 0f)
-                    continue;
-            }
+            if (!IsValidCombatTarget(targetRoot))
+                continue;
 
-            Debug.Log(
-                gameObject.name +
-                " attacked " +
-                targetRoot.name +
-                " | Damage = " +
-                stats.damage);
+            if (requireFacingTarget && !IsTargetInAttackFacing(targetRoot.transform.position))
+                continue;
 
-            // Áp dụng hiệu ứng hất văng (knockback)
-            var knockback = targetRoot.GetComponent<KnockbackController>();
-            if (knockback != null)
-            {
-                knockback.ApplyKnockback(
-                    transform.position,
-                    stats.knockbackForce);
-            }
-
-            // Gây sát thương qua interface chung của hệ thống.
-            var damageable = targetRoot.GetComponent<ArenaEnvironment.IDamageable>();
-            if (damageable != null)
-            {
-                damageable.TakeDamage(stats.damage);
-                TryDropItemOnHit(targetRoot.transform.position);
-            }
+            ApplyHitToTarget(targetRoot, transform.position);
         }
     }
 
-    /// <summary>
-    /// Hiển thị phạm vi tấn công trong Scene View
-    /// Chỉ dùng để hỗ trợ debug khi thiết kế game.
-    /// </summary>
-    private void OnDrawGizmosSelected()
+    float GetEffectiveAttackRange()
+    {
+        float baseRange = stats != null ? Mathf.Max(0.35f, stats.attackRange) : 1.25f;
+        float scale = Mathf.Max(1f, Mathf.Abs(transform.lossyScale.x));
+        return baseRange * scale;
+    }
+
+    bool IsValidCombatTarget(GameObject targetRoot)
+    {
+        if (targetRoot == null)
+            return false;
+
+        if (targetRoot.GetComponent<PlayerController>() != null)
+            return true;
+
+        if (targetRoot.GetComponent<PlayerHealth>() != null)
+            return true;
+
+        if (targetRoot.GetComponent<PlayerIdentity>() != null)
+            return true;
+
+        return false;
+    }
+
+    bool IsTargetInAttackFacing(Vector2 targetPosition)
+    {
+        Vector2 toTarget = targetPosition - (Vector2)transform.position;
+        if (toTarget.sqrMagnitude < 0.0001f)
+            return true;
+
+        Vector2 facing = Vector2.right;
+        if (spriteRenderer != null && spriteRenderer.flipX)
+            facing = Vector2.left;
+
+        return Vector2.Dot(facing, toTarget.normalized) >= minFacingDot;
+    }
+
+    void ApplyHitToTarget(GameObject targetRoot, Vector2 attackOrigin)
+    {
+        if (targetRoot == null || stats == null)
+            return;
+
+        float damageAmount = Mathf.Max(1f, stats.damage);
+        float knockbackForce = Mathf.Max(0f, stats.knockbackForce);
+
+        var targetBlock = targetRoot.GetComponent<PlayerBlockController>();
+        if (targetBlock != null && targetBlock.IsBlocking)
+            knockbackForce *= targetBlock.KnockbackMultiplierWhileBlocking;
+
+        var knockback = targetRoot.GetComponent<KnockbackController>();
+        if (knockback != null)
+            knockback.ApplyKnockback(attackOrigin, knockbackForce);
+
+        if (TryApplyDamage(targetRoot, damageAmount))
+        {
+            TryDropItemOnHit(targetRoot.transform.position);
+            TriggerHitStop();
+        }
+    }
+
+    public static bool TryApplyDamage(GameObject targetRoot, float damageAmount)
+    {
+        if (targetRoot == null || damageAmount <= 0f)
+            return false;
+
+        var health = targetRoot.GetComponent<PlayerHealth>();
+        if (health == null)
+            health = targetRoot.GetComponentInChildren<PlayerHealth>();
+        if (health == null)
+            health = targetRoot.GetComponentInParent<PlayerHealth>();
+
+        if (health != null)
+        {
+            if (!health.IsAlive)
+                return false;
+
+            health.TakeDamage(damageAmount);
+            return true;
+        }
+
+        var damageable = targetRoot.GetComponent<ArenaEnvironment.IDamageable>();
+        if (damageable == null)
+            damageable = targetRoot.GetComponentInChildren<ArenaEnvironment.IDamageable>();
+
+        if (damageable == null || !damageable.IsAlive)
+            return false;
+
+        damageable.TakeDamage(damageAmount);
+        return true;
+    }
+
+    void TriggerHitStop()
+    {
+        if (hitStopDuration <= 0f)
+            return;
+
+        hitStopUntil = Time.time + hitStopDuration;
+    }
+
+    void OnDrawGizmosSelected()
     {
         if (attackPoint == null)
             return;
@@ -204,7 +335,7 @@ public class AttackController : MonoBehaviour
 
         CharacterStatus status = GetComponent<CharacterStatus>();
         if (status != null)
-            radius = status.attackRange;
+            radius = Mathf.Max(0.35f, status.attackRange) * Mathf.Max(1f, Mathf.Abs(transform.lossyScale.x));
 
         Gizmos.DrawWireSphere(GetAttackCenter(), radius);
     }
@@ -222,18 +353,31 @@ public class AttackController : MonoBehaviour
         return (Vector2)transform.position + new Vector2(x, attackPoint.localPosition.y);
     }
 
-    Collider2D[] ReadTargetsInRange(Vector2 center, float radius)
+    int ReadTargetsInRange(Vector2 center, float radius)
     {
-        if (playerLayer.value != 0)
-            return Physics2D.OverlapCircleAll(center, radius, playerLayer);
+        EnsurePlayerLayerMask();
 
-        return Physics2D.OverlapCircleAll(center, radius);
+        var filter = new ContactFilter2D();
+        filter.useTriggers = true;
+        filter.useLayerMask = playerLayer.value != 0;
+        if (filter.useLayerMask)
+            filter.SetLayerMask(playerLayer);
+
+        return Physics2D.OverlapCircle(center, radius, filter, overlapBuffer);
     }
 
     static GameObject ResolveTargetRoot(Collider2D target)
     {
         if (target == null)
             return null;
+
+        var health = target.GetComponentInParent<PlayerHealth>();
+        if (health != null)
+            return health.gameObject;
+
+        var controller = target.GetComponentInParent<PlayerController>();
+        if (controller != null)
+            return controller.gameObject;
 
         if (target.attachedRigidbody != null)
             return target.attachedRigidbody.gameObject;
@@ -264,16 +408,13 @@ public class AttackController : MonoBehaviour
 
     void FireSorcererProjectile(int comboIndex)
     {
+        EnsurePlayerLayerMask();
+
         Vector2 direction = Vector2.right;
         if (spriteRenderer != null && spriteRenderer.flipX)
             direction = Vector2.left;
 
-        Vector2 spawnPosition;
-        if (attackPoint != null)
-            spawnPosition = attackPoint.position;
-        else
-            spawnPosition = transform.position;
-
+        Vector2 spawnPosition = attackPoint != null ? (Vector2)attackPoint.position : (Vector2)transform.position;
         spawnPosition += new Vector2(
             direction.x * Mathf.Abs(sorcererProjectileSpawnOffset.x),
             sorcererProjectileSpawnOffset.y);
@@ -289,12 +430,13 @@ public class AttackController : MonoBehaviour
             owner: gameObject,
             spawnPosition: spawnPosition,
             direction: direction,
-            damage: stats != null ? stats.damage : 0,
+            damage: stats != null ? Mathf.Max(1, stats.damage) : 1,
             knockbackForce: stats != null ? stats.knockbackForce : 0f,
             speed: speed,
             lifetime: lifetime,
             radius: sorcererProjectileRadius,
             targetLayerMask: playerLayer,
+            blockLayerMask: sorcererProjectileBlockLayers,
             sprite: projectileSprite,
             tint: sorcererProjectileTint,
             itemSpawner: itemSpawner,

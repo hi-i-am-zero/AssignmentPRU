@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class ComboController : MonoBehaviour
 {
@@ -6,58 +6,34 @@ public class ComboController : MonoBehaviour
     [Tooltip("Số đòn tối đa trong chuỗi combo")]
     public int maxCombo = 3;
 
-    [Tooltip("Thời gian cho phép tiếp tục combo")]
+    [Tooltip("Thời gian giữ trạng thái đòn vừa dùng trước khi reset")]
     public float comboResetTime = 0.5f;
 
     private int comboStep;
     private float timer;
 
-    // Combo hiện tại
     public int CurrentCombo => comboStep;
 
     private void Update()
     {
-        // Không có combo nào đang hoạt động
         if (comboStep <= 0)
             return;
 
         timer += Time.deltaTime;
-
-        // Hết thời gian nối combo
         if (timer >= comboResetTime)
-        {
             ResetCombo();
-        }
     }
 
     /// <summary>
-    /// Chuyển sang đòn đánh tiếp theo trong chuỗi combo.
-    /// Attack1 -> Attack2 -> Attack3
+    /// Đặt đòn đánh theo phím riêng (Attack_1..Attack_4).
     /// </summary>
-    public int NextCombo()
+    public void SetComboStep(int step)
     {
-        timer = 0f;
         int safeMax = Mathf.Max(1, maxCombo);
-
-        if (comboStep <= 0)
-            comboStep = 1;
-        else
-            comboStep = comboStep >= safeMax ? 1 : comboStep + 1;
-
-        return comboStep;
+        comboStep = Mathf.Clamp(step, 1, safeMax);
+        timer = 0f;
     }
 
-    /// <summary>
-    /// Kiểm tra combo đã đạt đòn cuối chưa.
-    /// </summary>
-    public bool IsComboFinished()
-    {
-        return comboStep >= maxCombo;
-    }
-
-    /// <summary>
-    /// Đặt lại combo về trạng thái ban đầu.
-    /// </summary>
     public void ResetCombo()
     {
         comboStep = 0;

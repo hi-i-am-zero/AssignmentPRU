@@ -27,7 +27,11 @@ namespace SkyfallArena.Multiplayer
             public Key right;
             public Key up;
             public Key down;
-            public Key attack;
+            public Key attack1;
+            public Key attack2;
+            public Key attack3;
+            public Key attack4;
+            public Key block;
             public Key interact;
             public Key crouch;
             public Key sprint;
@@ -69,6 +73,7 @@ namespace SkyfallArena.Multiplayer
 
         [Header("Lobby")]
         [SerializeField] bool autoStartWhenBothPlayersJoined = true;
+        [SerializeField] bool enableInArenaLobby = false;
         [SerializeField] bool verboseLogs = true;
 
         [Header("Member 2 Core Systems")]
@@ -88,6 +93,8 @@ namespace SkyfallArena.Multiplayer
         };
 
         bool matchStarted;
+        bool combatInputEnabled = true;
+        bool sessionMatchPending;
 
         public event Action<int> PlayerJoined;
         public event Action<int> PlayerLeft;
@@ -96,6 +103,7 @@ namespace SkyfallArena.Multiplayer
 
         public int JoinedPlayerCount => joinedPlayers.Count;
         public bool MatchHasStarted => matchStarted;
+        public bool CombatInputEnabled => combatInputEnabled;
 
         void Reset()
         {
@@ -110,22 +118,150 @@ namespace SkyfallArena.Multiplayer
 
         void Awake()
         {
-            if (keyboardLayouts == null || keyboardLayouts.Length == 0)
-                keyboardLayouts = BuildDefaultKeyboardLayouts();
+            // Always refresh default combat key layouts for the dedicated attack-key scheme.
+            keyboardLayouts = BuildDefaultKeyboardLayouts();
 
             if (arenaManager == null)
                 arenaManager = FindFirstObjectByType<ArenaEnvironment.ArenaManager>();
+
+            EnsureFallbackPrefabs();
+            DisableScenePlacedPlayers();
+        }
+
+        void EnsureFallbackPrefabs()
+        {
+#if UNITY_EDITOR
+            if (knightPrefab == null)
+                knightPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Knight.prefab");
+            if (ninjaPrefab == null)
+                ninjaPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Ninja.prefab");
+            if (sorcererPrefab == null)
+                sorcererPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Sorcerer.prefab");
+#else
+            if (knightPrefab == null)
+                knightPrefab = Resources.Load<GameObject>("Knight");
+            if (ninjaPrefab == null)
+                ninjaPrefab = Resources.Load<GameObject>("Ninja");
+            if (sorcererPrefab == null)
+                sorcererPrefab = Resources.Load<GameObject>("Sorcerer");
+#endif
+        }
+
+        void DisableScenePlacedPlayers()
+        {
+            var placedPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+            for (int index = 0; index < placedPlayers.Length; index++)
+            {
+                var player = placedPlayers[index];
+                if (player == null)
+                    continue;
+
+                // Keep only runtime-spawned players from this manager.
+                if (player.GetComponent<LocalPlayerInputSource>() != null)
+                    continue;
+
+                player.gameObject.SetActive(false);
+                Log($"Disabled scene-placed player '{player.name}' (lobby spawn mode).");
+            }
+        }
+
+        void Start()
+        {
+            EnsureResultUiPresent();
+
+            if (matchStarted || enableInArenaLobby)
+                return;
+
+            // Prefer MatchBootstrap when present on this object.
+            if (GetComponent<SkyfallArena.GameFlow.MatchBootstrap>() != null)
+                return;
+
+            var session = SkyfallArena.GameFlow.GameSession.Instance;
+            if (session != null && session.HasMatchSelection)
+            {
+                StartMatchFromSession(session.Player1Character, session.Player2Character);
+                return;
+            }
+
+            StartMatchFromSession(CharacterType.Character.Knight, CharacterType.Character.Ninja);
+            Log("Started match with editor fallback characters (Knight vs Ninja).");
+        }
+
+        void EnsureResultUiPresent()
+        {
+            if (FindFirstObjectByType<SkyfallArena.GameFlow.ResultUI>() == null)
+                gameObject.AddComponent<SkyfallArena.GameFlow.ResultUI>();
+
+            if (FindFirstObjectByType<SkyfallArena.GameFlow.PlayerHealthBarsHud>() == null)
+                gameObject.AddComponent<SkyfallArena.GameFlow.PlayerHealthBarsHud>();
         }
 
         void Update()
         {
             if (matchStarted)
             {
-                PublishInputFrames();
+                if (combatInputEnabled)
+                    PublishInputFrames();
                 return;
             }
 
+            if (sessionMatchPending || !enableInArenaLobby)
+                return;
+
             UpdateLobby();
+        }
+
+        /// <summary>
+        /// Starts a 2-player match immediately from pre-selected characters (menu flow).
+        /// </summary>
+        public void StartMatchFromSession(CharacterType.Character player1Character, CharacterType.Character player2Character)
+        {
+            if (matchStarted)
+                return;
+
+            sessionMatchPending = true;
+            enableInArenaLobby = false;
+            combatInputEnabled = true;
+            joinedPlayers.Clear();
+
+            AddSessionPlayer(1, 0, player1Character);
+            AddSessionPlayer(2, 1, player2Character);
+            StartMatchInternal();
+            sessionMatchPending = false;
+        }
+
+        public void SetCombatInputEnabled(bool enabled)
+        {
+            combatInputEnabled = enabled;
+        }
+
+        void AddSessionPlayer(int playerId, int keyboardLayoutIndex, CharacterType.Character character)
+        {
+            int selectionIndex = FindSelectionIndex(character);
+            var joined = new JoinedPlayer
+            {
+                playerId = playerId,
+                source = ControlSource.Keyboard,
+                keyboardLayoutIndex = keyboardLayoutIndex,
+                selectionIndex = selectionIndex
+            };
+
+            joinedPlayers.Add(joined);
+            PlayerJoined?.Invoke(playerId);
+            CharacterChanged?.Invoke(playerId, character);
+            Log($"Session player {playerId} ready as {character}.");
+        }
+
+        int FindSelectionIndex(CharacterType.Character character)
+        {
+            var order = GetSelectionOrder();
+            for (int index = 0; index < order.Count; index++)
+            {
+                if (order[index] == character)
+                    return index;
+            }
+
+            return 0;
         }
 
         void UpdateLobby()
@@ -256,7 +392,7 @@ namespace SkyfallArena.Multiplayer
 
             int playerLayer = LayerMask.NameToLayer(ArenaEnvironment.GameLayers.Player);
             if (playerLayer >= 0)
-                spawned.layer = playerLayer;
+                SetLayerRecursively(spawned, playerLayer);
 
             if (!string.IsNullOrEmpty(ArenaEnvironment.GameLayers.TagPlayer))
                 spawned.tag = ArenaEnvironment.GameLayers.TagPlayer;
@@ -273,6 +409,9 @@ namespace SkyfallArena.Multiplayer
 
             if (autoAttachItemUpgradeBridge)
                 EnsureItemUpgradeBridge(spawned);
+
+            if (spawned.GetComponent<PlayerBlockController>() == null)
+                spawned.AddComponent<PlayerBlockController>();
 
             var source = spawned.GetComponent<LocalPlayerInputSource>();
             if (source == null)
@@ -329,8 +468,16 @@ namespace SkyfallArena.Multiplayer
 
             frame.JumpPressed = WasPressedThisFrame(keyboard, layout.up);
             frame.JumpHeld = IsPressed(keyboard, layout.up);
-            frame.AttackPressed = WasPressedThisFrame(keyboard, layout.attack);
-            frame.AttackHeld = IsPressed(keyboard, layout.attack);
+            frame.Attack1Pressed = WasPressedThisFrame(keyboard, layout.attack1);
+            frame.Attack2Pressed = WasPressedThisFrame(keyboard, layout.attack2);
+            frame.Attack3Pressed = WasPressedThisFrame(keyboard, layout.attack3);
+            frame.Attack4Pressed = WasPressedThisFrame(keyboard, layout.attack4);
+            frame.BlockHeld = IsPressed(keyboard, layout.block);
+            frame.AttackPressed = frame.Attack1Pressed || frame.Attack2Pressed || frame.Attack3Pressed || frame.Attack4Pressed;
+            frame.AttackHeld = IsPressed(keyboard, layout.attack1)
+                || IsPressed(keyboard, layout.attack2)
+                || IsPressed(keyboard, layout.attack3)
+                || IsPressed(keyboard, layout.attack4);
             frame.InteractPressed = WasPressedThisFrame(keyboard, layout.interact);
             frame.CrouchHeld = IsPressed(keyboard, layout.crouch);
             frame.SprintHeld = IsPressed(keyboard, layout.sprint);
@@ -342,6 +489,7 @@ namespace SkyfallArena.Multiplayer
 
         LocalPlayerInputFrame ReadGamepadGameplayFrame(JoinedPlayer joined)
         {
+            // Gamepad combat mapping is deferred (keyboard-first control scheme).
             var frame = new LocalPlayerInputFrame
             {
                 PlayerId = joined.playerId
@@ -355,11 +503,6 @@ namespace SkyfallArena.Multiplayer
             frame.Move = pad.leftStick.ReadValue();
             frame.JumpPressed = pad.buttonSouth.wasPressedThisFrame;
             frame.JumpHeld = pad.buttonSouth.isPressed;
-            frame.AttackPressed = pad.buttonWest.wasPressedThisFrame;
-            frame.AttackHeld = pad.buttonWest.isPressed;
-            frame.InteractPressed = pad.buttonNorth.wasPressedThisFrame;
-            frame.CrouchHeld = pad.buttonEast.isPressed;
-            frame.SprintHeld = pad.leftStickButton.isPressed;
             frame.SubmitPressed = pad.startButton.wasPressedThisFrame;
             frame.CancelPressed = pad.selectButton.wasPressedThisFrame;
 
@@ -656,6 +799,20 @@ namespace SkyfallArena.Multiplayer
                 Debug.Log($"[LocalMultiplayerManager] {message}", this);
         }
 
+        static void SetLayerRecursively(GameObject root, int layer)
+        {
+            if (root == null || layer < 0)
+                return;
+
+            root.layer = layer;
+            var transforms = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                if (transforms[i] != null)
+                    transforms[i].gameObject.layer = layer;
+            }
+        }
+
         void EnsureCoreSystems(GameObject playerObject)
         {
             if (playerObject == null)
@@ -689,13 +846,17 @@ namespace SkyfallArena.Multiplayer
             {
                 new KeyboardLayout
                 {
-                    displayName = "Keyboard P1 (WASD)",
+                    displayName = "Keyboard P1 (WASD + JKL)",
                     join = Key.F,
                     left = Key.A,
                     right = Key.D,
                     up = Key.W,
                     down = Key.S,
-                    attack = Key.F,
+                    attack1 = Key.J,
+                    attack2 = Key.K,
+                    attack3 = Key.L,
+                    attack4 = Key.U,
+                    block = Key.I,
                     interact = Key.E,
                     crouch = Key.C,
                     sprint = Key.LeftShift,
@@ -706,13 +867,17 @@ namespace SkyfallArena.Multiplayer
                 },
                 new KeyboardLayout
                 {
-                    displayName = "Keyboard P2 (Arrows)",
+                    displayName = "Keyboard P2 (Arrows + Numpad)",
                     join = Key.Numpad0,
                     left = Key.LeftArrow,
                     right = Key.RightArrow,
                     up = Key.UpArrow,
                     down = Key.DownArrow,
-                    attack = Key.Numpad0,
+                    attack1 = Key.Numpad1,
+                    attack2 = Key.Numpad2,
+                    attack3 = Key.Numpad3,
+                    attack4 = Key.Numpad4,
+                    block = Key.Numpad5,
                     interact = Key.NumpadEnter,
                     crouch = Key.RightCtrl,
                     sprint = Key.RightShift,

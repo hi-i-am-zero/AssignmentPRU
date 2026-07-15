@@ -716,6 +716,9 @@ static class CharacterAnimationBuilder
         if (root.GetComponent<PlayerUpgradeBuffAdapter>() == null)
             root.AddComponent<PlayerUpgradeBuffAdapter>();
 
+        if (root.GetComponent<PlayerBlockController>() == null)
+            root.AddComponent<PlayerBlockController>();
+
         var attackController = root.GetComponent<AttackController>();
         if (attackController == null)
             attackController = root.AddComponent<AttackController>();

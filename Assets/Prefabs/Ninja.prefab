@@ -85,6 +85,7 @@ GameObject:
   - component: {fileID: 4399956633176022881}
   - component: {fileID: 1978044693262425026}
   - component: {fileID: 6360674481328702531}
+  - component: {fileID: 532564130287668190}
   m_Layer: 0
   m_Name: Ninja
   m_TagString: Untagged
@@ -415,9 +416,34 @@ MonoBehaviour:
   itemSpawner: {fileID: 0}
   useRangedProjectilesForSorcerer: 1
   sorcererProjectileSpeed: 11
-  sorcererProjectileLifetime: 0.9
+  sorcererFallbackRange: 6
+  sorcererRangeFractionOfMapWidth: 0.25
   sorcererProjectileRadius: 0.2
   sorcererProjectileSpawnOffset: {x: 0.65, y: 0}
   sorcererProjectileTint: {r: 0.65, g: 0.9, b: 1, a: 0.95}
   sorcererProjectileType1Sprite: {fileID: 0}
   sorcererProjectileType2Sprite: {fileID: 0}
+  sorcererProjectileBlockLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  hitStopDuration: 0.045
+  requireFacingTarget: 1
+  minFacingDot: -0.15
+--- !u!114 &532564130287668190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6950661439465875454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e9c1a2b3d4f67890123456789abcdef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBlockController
+  damageTakenWhileBlocking: 0.5
+  knockbackMultiplierWhileBlocking: 0.35
+  animationSync: {fileID: 0}
+  inputSource: {fileID: 0}
+  playerController: {fileID: 0}
+  characterType: {fileID: 0}

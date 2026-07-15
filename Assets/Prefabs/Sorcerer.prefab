@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 7949934527973054836}
   - component: {fileID: 8579274487905615263}
   - component: {fileID: 7689589535025046827}
+  - component: {fileID: 4705355936363540754}
   m_Layer: 0
   m_Name: Sorcerer
   m_TagString: Untagged
@@ -353,12 +354,37 @@ MonoBehaviour:
   itemSpawner: {fileID: 0}
   useRangedProjectilesForSorcerer: 1
   sorcererProjectileSpeed: 11
-  sorcererProjectileLifetime: 0.9
+  sorcererFallbackRange: 6
+  sorcererRangeFractionOfMapWidth: 0.25
   sorcererProjectileRadius: 0.2
   sorcererProjectileSpawnOffset: {x: 0.65, y: 0}
   sorcererProjectileTint: {r: 0.65, g: 0.9, b: 1, a: 0.95}
   sorcererProjectileType1Sprite: {fileID: 8371219368546772992, guid: ec24a9b8047bebb4a9a104ce620bfa42, type: 3}
   sorcererProjectileType2Sprite: {fileID: 7274713203802680340, guid: d4bb3a67723f25049a41b83701051e88, type: 3}
+  sorcererProjectileBlockLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  hitStopDuration: 0.045
+  requireFacingTarget: 1
+  minFacingDot: -0.15
+--- !u!114 &4705355936363540754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e9c1a2b3d4f67890123456789abcdef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBlockController
+  damageTakenWhileBlocking: 0.5
+  knockbackMultiplierWhileBlocking: 0.35
+  animationSync: {fileID: 0}
+  inputSource: {fileID: 0}
+  playerController: {fileID: 0}
+  characterType: {fileID: 0}
 --- !u!1 &6132258174007801064
 GameObject:
   m_ObjectHideFlags: 0

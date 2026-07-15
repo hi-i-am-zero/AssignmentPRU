@@ -14,7 +14,6 @@ public class CharacterInitializer : MonoBehaviour
 
     private void Awake()
     {
-        // Lấy các component trên cùng GameObject
         characterType = GetComponent<CharacterType>();
         status = GetComponent<CharacterStatus>();
         playerController = GetComponent<PlayerController>();
@@ -26,98 +25,61 @@ public class CharacterInitializer : MonoBehaviour
             return;
         }
 
-        // Gán chỉ số theo từng loại nhân vật
+        ApplyStats();
+    }
+
+    /// <summary>
+    /// Re-apply class stats (safe to call if damage/range were still 0 at runtime).
+    /// </summary>
+    public void ApplyStats()
+    {
+        if (characterType == null)
+            characterType = GetComponent<CharacterType>();
+        if (status == null)
+            status = GetComponent<CharacterStatus>();
+        if (playerController == null)
+            playerController = GetComponent<PlayerController>();
+        if (comboController == null)
+            comboController = GetComponent<ComboController>();
+
+        if (characterType == null || status == null || playerController == null)
+            return;
+
         int comboCount = 3;
         switch (characterType.character)
         {
-            //--------------------------------------------------
-            // KNIGHT
-            //--------------------------------------------------
             case CharacterType.Character.Knight:
-
-                // Knight là nhân vật tanker / đấu sĩ
-                // Máu cao
-                // Damage khá cao
-                // Tốc độ trung bình
-                // Knockback mạnh
-
                 status.moveSpeed = 5f;
                 status.maxHP = 120;
                 status.damage = 20;
-
-                // Tầm đánh cận chiến
                 status.attackRange = 1.3f;
-
-                // Thời gian chờ giữa 2 lần đánh
                 status.attackCooldown = 0.55f;
-
-                // Lực hất văng đối thủ
                 status.knockbackForce = 10f;
                 comboCount = 3;
-
                 break;
 
-            //--------------------------------------------------
-            // NINJA
-            //--------------------------------------------------
             case CharacterType.Character.Ninja:
-
-                // Ninja là sát thủ
-                // Di chuyển nhanh nhất
-                // Damage thấp hơn Knight
-                // Combo nhanh
-
                 status.moveSpeed = 8f;
-
                 status.maxHP = 90;
-
                 status.damage = 15;
-
-                // Tầm đánh ngắn
                 status.attackRange = 1f;
-
-                // Thời gian chờ giữa 2 lần đánh
                 status.attackCooldown = 0.25f;
-
-                // Lực hất văng đối thủ
                 status.knockbackForce = 5f;
                 comboCount = 3;
-
                 break;
 
-            //--------------------------------------------------
-            // SORCERER
-            //--------------------------------------------------
             case CharacterType.Character.Sorcerer:
-
-                // Sorcerer là pháp sư
-                // Máu thấp nhất
-                // Tốc độ chậm
-                // Đánh xa
-
                 status.moveSpeed = 4f;
-
                 status.maxHP = 70;
-
                 status.damage = 18;
-
-                // Tầm đánh xa
                 status.attackRange = 4f;
-
-                // Thời gian chờ giữa 2 lần đánh
                 status.attackCooldown = 0.8f;
-
-                // Lực hất văng đối thủ
                 status.knockbackForce = 7f;
                 comboCount = 4;
-
                 break;
         }
 
-        if (playerController != null)
-        {
-            playerController.moveSpeed = status.moveSpeed;
-        }
+        playerController.moveSpeed = status.moveSpeed;
 
         if (comboController != null)
             comboController.maxCombo = comboCount;

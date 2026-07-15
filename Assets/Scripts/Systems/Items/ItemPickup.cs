@@ -92,21 +92,19 @@ namespace SkyfallArena.Systems.Items
             if (!LocalPlayerRules.IsSupportedPlayerId(playerId))
                 return;
 
-            isCollected = true;
+            // Already maxed this skill: leave the item for the other player / future use.
+            if (itemLevelManager.IsMaxLevel(playerId, itemDefinition))
+                return;
 
-            var registered = itemLevelManager.RegisterPickup(playerId, itemDefinition, collector);
-            var context = new ItemBuffContext(
-                playerId,
-                itemDefinition.ItemType,
-                registered.Level,
-                registered.PreviousLevel,
-                itemDefinition,
-                collector);
+            if (!itemLevelManager.TryRegisterPickup(playerId, itemDefinition, collector, out var context))
+                return;
+
+            isCollected = true;
 
             ApplyBuffToCollector(collector, context);
 
             ItemCollected?.Invoke(context);
-            onItemCollected.Invoke(playerId, itemDefinition.ItemType, registered.PreviousLevel, registered.Level);
+            onItemCollected.Invoke(playerId, itemDefinition.ItemType, context.PreviousLevel, context.Level);
 
             if (pickupCollider != null)
                 pickupCollider.enabled = false;

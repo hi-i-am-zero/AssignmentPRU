@@ -1,10 +1,14 @@
+using SkyfallArena.Systems;
 using SkyfallArena.Systems.Items;
 using UnityEngine;
 using ArenaEnvironment = Environment;
+using System.Collections.Generic;
 
 [DisallowMultipleComponent]
 public sealed class SorcererProjectile : MonoBehaviour
 {
+    static readonly Queue<SorcererProjectile> Pool = new Queue<SorcererProjectile>();
+
     GameObject owner;
     Vector2 direction;
     int damage;
@@ -12,11 +16,14 @@ public sealed class SorcererProjectile : MonoBehaviour
     float speed;
     float lifetime;
     LayerMask targetLayerMask;
+    LayerMask blockLayerMask;
     ItemSpawner itemSpawner;
     bool allowHitDrop;
     float dropChanceOnHit;
 
     Rigidbody2D body;
+    CircleCollider2D triggerCollider;
+    SpriteRenderer spriteRenderer;
     bool hasAppliedHit;
     float livedTime;
 
@@ -30,31 +37,26 @@ public sealed class SorcererProjectile : MonoBehaviour
         float lifetime,
         float radius,
         LayerMask targetLayerMask,
+        LayerMask blockLayerMask,
         Sprite sprite,
         Color tint,
         ItemSpawner itemSpawner,
         bool allowHitDrop,
         float dropChanceOnHit)
     {
-        var projectileObject = new GameObject("SorcererProjectile");
-        projectileObject.transform.position = spawnPosition;
+        SorcererProjectile projectile = Acquire();
+        projectile.transform.position = spawnPosition;
+        projectile.gameObject.SetActive(true);
 
-        var projectile = projectileObject.AddComponent<SorcererProjectile>();
+        if (projectile.triggerCollider != null)
+            projectile.triggerCollider.radius = Mathf.Max(0.05f, radius);
 
-        var rigidBody = projectileObject.AddComponent<Rigidbody2D>();
-        rigidBody.gravityScale = 0f;
-        rigidBody.isKinematic = true;
-        rigidBody.freezeRotation = true;
-        rigidBody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        var collider = projectileObject.AddComponent<CircleCollider2D>();
-        collider.isTrigger = true;
-        collider.radius = Mathf.Max(0.05f, radius);
-
-        var spriteRenderer = projectileObject.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = sprite;
-        spriteRenderer.color = tint;
-        spriteRenderer.sortingOrder = 10;
+        if (projectile.spriteRenderer != null)
+        {
+            projectile.spriteRenderer.sprite = sprite;
+            projectile.spriteRenderer.color = tint;
+            projectile.spriteRenderer.flipX = direction.x < 0f;
+        }
 
         projectile.Initialize(
             owner: owner,
@@ -64,11 +66,42 @@ public sealed class SorcererProjectile : MonoBehaviour
             speed: speed,
             lifetime: lifetime,
             targetLayerMask: targetLayerMask,
+            blockLayerMask: blockLayerMask,
             itemSpawner: itemSpawner,
             allowHitDrop: allowHitDrop,
-            dropChanceOnHit: dropChanceOnHit,
-            body: rigidBody);
+            dropChanceOnHit: dropChanceOnHit);
 
+        return projectile;
+    }
+
+    static SorcererProjectile Acquire()
+    {
+        while (Pool.Count > 0)
+        {
+            var pooled = Pool.Dequeue();
+            if (pooled != null)
+                return pooled;
+        }
+
+        var projectileObject = new GameObject("SorcererProjectile");
+        var projectile = projectileObject.AddComponent<SorcererProjectile>();
+
+        var rigidBody = projectileObject.AddComponent<Rigidbody2D>();
+        rigidBody.gravityScale = 0f;
+        rigidBody.bodyType = RigidbodyType2D.Kinematic;
+        rigidBody.freezeRotation = true;
+        rigidBody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        var collider = projectileObject.AddComponent<CircleCollider2D>();
+        collider.isTrigger = true;
+        collider.radius = 0.2f;
+
+        var spriteRenderer = projectileObject.AddComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = 10;
+
+        projectile.body = rigidBody;
+        projectile.triggerCollider = collider;
+        projectile.spriteRenderer = spriteRenderer;
         return projectile;
     }
 
@@ -80,10 +113,10 @@ public sealed class SorcererProjectile : MonoBehaviour
         float speed,
         float lifetime,
         LayerMask targetLayerMask,
+        LayerMask blockLayerMask,
         ItemSpawner itemSpawner,
         bool allowHitDrop,
-        float dropChanceOnHit,
-        Rigidbody2D body)
+        float dropChanceOnHit)
     {
         this.owner = owner;
         this.direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
@@ -92,10 +125,12 @@ public sealed class SorcererProjectile : MonoBehaviour
         this.speed = Mathf.Max(0.5f, speed);
         this.lifetime = Mathf.Max(0.05f, lifetime);
         this.targetLayerMask = targetLayerMask;
+        this.blockLayerMask = blockLayerMask;
         this.itemSpawner = itemSpawner;
         this.allowHitDrop = allowHitDrop;
         this.dropChanceOnHit = Mathf.Clamp01(dropChanceOnHit);
-        this.body = body;
+        hasAppliedHit = false;
+        livedTime = 0f;
     }
 
     void Update()
@@ -106,7 +141,7 @@ public sealed class SorcererProjectile : MonoBehaviour
         livedTime += Time.deltaTime;
         if (livedTime >= lifetime)
         {
-            Destroy(gameObject);
+            Recycle();
             return;
         }
 
@@ -119,6 +154,13 @@ public sealed class SorcererProjectile : MonoBehaviour
         if (hasAppliedHit || other == null)
             return;
 
+        if (IsBlockedByEnvironment(other))
+        {
+            hasAppliedHit = true;
+            Recycle();
+            return;
+        }
+
         GameObject targetRoot = ResolveTargetRoot(other);
         if (targetRoot == null)
             return;
@@ -128,26 +170,40 @@ public sealed class SorcererProjectile : MonoBehaviour
 
         if (targetLayerMask.value != 0)
         {
-            int layerMask = 1 << targetRoot.layer;
-            if ((targetLayerMask.value & layerMask) == 0)
+            int rootMask = 1 << targetRoot.layer;
+            int colliderMask = 1 << other.gameObject.layer;
+            if ((targetLayerMask.value & rootMask) == 0 && (targetLayerMask.value & colliderMask) == 0)
                 return;
         }
 
-        if (targetRoot.GetComponent<PlayerController>() == null)
+        if (targetRoot.GetComponent<PlayerController>() == null
+            && targetRoot.GetComponent<PlayerHealth>() == null)
             return;
 
         hasAppliedHit = true;
 
+        float appliedKnockback = knockbackForce;
+        var targetBlock = targetRoot.GetComponent<PlayerBlockController>();
+        if (targetBlock != null && targetBlock.IsBlocking)
+            appliedKnockback *= targetBlock.KnockbackMultiplierWhileBlocking;
+
         var knockback = targetRoot.GetComponent<KnockbackController>();
         if (knockback != null)
-            knockback.ApplyKnockback(transform.position, knockbackForce);
+            knockback.ApplyKnockback(transform.position, appliedKnockback);
 
-        var damageable = targetRoot.GetComponent<ArenaEnvironment.IDamageable>();
-        if (damageable != null)
-            damageable.TakeDamage(damage);
+        AttackController.TryApplyDamage(targetRoot, damage);
 
         TryDropItem(targetRoot.transform.position);
-        Destroy(gameObject);
+        Recycle();
+    }
+
+    bool IsBlockedByEnvironment(Collider2D other)
+    {
+        if (other == null || blockLayerMask.value == 0)
+            return false;
+
+        int layerBit = 1 << other.gameObject.layer;
+        return (blockLayerMask.value & layerBit) != 0;
     }
 
     void TryDropItem(Vector2 hitPosition)
@@ -161,10 +217,24 @@ public sealed class SorcererProjectile : MonoBehaviour
         itemSpawner.TrySpawnHitDrop(hitPosition);
     }
 
+    void Recycle()
+    {
+        gameObject.SetActive(false);
+        Pool.Enqueue(this);
+    }
+
     static GameObject ResolveTargetRoot(Collider2D target)
     {
         if (target == null)
             return null;
+
+        var health = target.GetComponentInParent<PlayerHealth>();
+        if (health != null)
+            return health.gameObject;
+
+        var controller = target.GetComponentInParent<PlayerController>();
+        if (controller != null)
+            return controller.gameObject;
 
         if (target.attachedRigidbody != null)
             return target.attachedRigidbody.gameObject;

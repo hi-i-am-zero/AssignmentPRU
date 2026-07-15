@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SkyfallArena.Systems.Items
 {
     /// <summary>
-    /// Bridges item buff payloads into legacy PlayerUpgrade methods.
+    /// Applies item buffs into PlayerUpgrade (jump / damage / damage reduction).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerUpgradeBuffAdapter : MonoBehaviour, IBuffable
@@ -27,15 +27,22 @@ namespace SkyfallArena.Systems.Items
             if (playerUpgrade == null)
                 return false;
 
+            // Pickup layer already blocks maxed skills; keep a hard guard here too.
             switch (context.ItemType)
             {
                 case ItemType.JumpBoost:
+                    if (playerUpgrade.jumpBoostLevel >= 3)
+                        return false;
                     playerUpgrade.UpgradeJumpBoost();
                     break;
                 case ItemType.AttackChain:
+                    if (playerUpgrade.attackChainLevel >= 3)
+                        return false;
                     playerUpgrade.UpgradeAttackChain();
                     break;
                 case ItemType.ShieldWall:
+                    if (playerUpgrade.shieldWallLevel >= 3)
+                        return false;
                     playerUpgrade.UpgradeShieldWall();
                     break;
                 default:

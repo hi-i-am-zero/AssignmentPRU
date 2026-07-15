@@ -71,29 +71,51 @@ namespace SkyfallArena.Systems.Items
             return byType.TryGetValue(itemType, out var level) ? level : 0;
         }
 
-        public ItemBuffContext RegisterPickup(int playerId, ItemDefinition definition, GameObject collector = null)
+        public bool IsMaxLevel(int playerId, ItemDefinition definition)
         {
+            if (definition == null || !LocalPlayerRules.IsSupportedPlayerId(playerId))
+                return false;
+
+            return GetLevel(playerId, definition.ItemType) >= definition.MaxLevel;
+        }
+
+        public bool IsMaxLevel(int playerId, ItemType itemType)
+        {
+            if (!LocalPlayerRules.IsSupportedPlayerId(playerId))
+                return false;
+
+            if (!TryGetDefinition(itemType, out var definition) || definition == null)
+                return GetLevel(playerId, itemType) >= 3;
+
+            return GetLevel(playerId, itemType) >= definition.MaxLevel;
+        }
+
+        /// <summary>
+        /// Returns false when the player already has this item at max level (no pickup).
+        /// </summary>
+        public bool TryRegisterPickup(
+            int playerId,
+            ItemDefinition definition,
+            GameObject collector,
+            out ItemBuffContext context)
+        {
+            context = default;
+
             if (definition == null)
-                throw new ArgumentNullException(nameof(definition));
+                return false;
 
             if (!LocalPlayerRules.IsSupportedPlayerId(playerId))
-            {
-                return new ItemBuffContext(
-                    playerId,
-                    definition.ItemType,
-                    0,
-                    0,
-                    definition,
-                    collector);
-            }
+                return false;
+
+            int previousLevel = GetLevel(playerId, definition.ItemType);
+            if (previousLevel >= definition.MaxLevel)
+                return false;
 
             var levels = GetOrCreatePlayerLevels(playerId);
-
-            int previousLevel = levels.TryGetValue(definition.ItemType, out var found) ? found : 0;
             int newLevel = Mathf.Clamp(previousLevel + 1, 1, definition.MaxLevel);
             levels[definition.ItemType] = newLevel;
 
-            var context = new ItemBuffContext(
+            context = new ItemBuffContext(
                 playerId,
                 definition.ItemType,
                 newLevel,
@@ -110,7 +132,7 @@ namespace SkyfallArena.Systems.Items
                 onItemLevelChanged.Invoke(playerId, definition.ItemType, newLevel, definition.MaxLevel);
             }
 
-            return context;
+            return true;
         }
 
         public void ResetPlayerLevels(int playerId)

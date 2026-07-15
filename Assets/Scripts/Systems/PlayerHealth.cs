@@ -127,6 +127,10 @@ namespace SkyfallArena.Systems
 
         public void TakeDamage(float amount)
         {
+            // Keep damage working even if this component was disabled by id checks.
+            if (!initialized)
+                InitializeHealth();
+
             if (!isAlive || amount <= 0f)
                 return;
 
@@ -135,6 +139,10 @@ namespace SkyfallArena.Systems
                 float reduction = Mathf.Clamp01(playerUpgrade.damageReduction);
                 amount *= 1f - reduction;
             }
+
+            var blockController = GetComponent<PlayerBlockController>();
+            if (blockController != null && blockController.IsBlocking)
+                amount *= Mathf.Clamp01(blockController.DamageTakenWhileBlocking);
 
             if (amount <= 0f)
                 return;
