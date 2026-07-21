@@ -7,6 +7,8 @@ namespace Environment
     [DisallowMultipleComponent]
     public class ItemSpawnPoint : MonoBehaviour
     {
+        // Thời gian chờ trước khi item xuất hiện lại sau khi bị nhặt
+        // respawnDelay: giây
         [SerializeField] float respawnDelay = 10f;
         [SerializeField] bool hasItem;
 
@@ -16,6 +18,7 @@ namespace Environment
 
         Light2D zoneLight;
 
+        // Bật ánh sáng vàng nhạt đánh dấu vị trí item (chỉ visual)
         void Awake()
         {
             zoneLight = GetComponentInChildren<Light2D>();

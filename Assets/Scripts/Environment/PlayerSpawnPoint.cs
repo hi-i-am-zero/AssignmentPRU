@@ -2,11 +2,14 @@ using UnityEngine;
 
 namespace Environment
 {
-    /// <summary>Điểm spawn P1/P2 khi bắt đầu trận.</summary>
+    /// <summary>
+    /// Đánh dấu vị trí spawn player trên map.
+    /// Được đặt bởi EnvironmentSceneBuilder qua hàm StandOn().
+    /// </summary>
     [DisallowMultipleComponent]
     public class PlayerSpawnPoint : MonoBehaviour
     {
-        [SerializeField] int playerIndex;
+        [SerializeField] int playerIndex; // 1 = P1, 2 = P2
         [SerializeField] Color gizmoColor = new Color(0.2f, 0.8f, 1f, 0.8f);
 
         public int PlayerIndex => playerIndex;
@@ -15,6 +18,7 @@ namespace Environment
         public void SetPlayerIndex(int index) => playerIndex = index;
 
 #if UNITY_EDITOR
+        // Hiển thị vị trí spawn trong Scene view khi chỉnh map
         void OnDrawGizmos()
         {
             Gizmos.color = gizmoColor;

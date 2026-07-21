@@ -7,11 +7,14 @@ namespace Environment
     [RequireComponent(typeof(Collider2D))]
     public class HazardZone : MonoBehaviour
     {
+        // Máu mất mỗi giây khi player đứng trong vùng (map Volcano — dung nham)
+        // damagePerSecond: HP/s
         [SerializeField] float damagePerSecond = 25f;
         [SerializeField] bool instantKill;
 
         Light2D zoneLight;
 
+        // Trigger zone + tag Hazard + ánh sáng đỏ cảnh báo
         void Awake()
         {
             var col = GetComponent<Collider2D>();
@@ -27,6 +30,7 @@ namespace Environment
             }
         }
 
+        // Khác DeathZone: không chết ngay — mất máu dần mỗi frame player còn trong vùng
         void OnTriggerStay2D(Collider2D other)
         {
             if (!other.CompareTag(GameLayers.TagPlayer)) return;
@@ -35,6 +39,7 @@ namespace Environment
             if (instantKill)
                 damageable.Kill();
             else
+                // Time.deltaTime (giây) × damagePerSecond (HP/s) = HP mất mỗi frame
                 damageable.TakeDamage(damagePerSecond * Time.deltaTime);
         }
 

@@ -6,11 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Title.unity
-    guid: b1c2d3e4f5a6789012345678abcdef01
-  - enabled: 1
-    path: Assets/Scenes/Select.unity
-    guid: b1c2d3e4f5a6789012345678abcdef02
+    path: Assets/Scenes/TestArena.unity
+    guid: 04ffce45a2de94e13a42930c76dab7c5
   - enabled: 1
     path: Assets/Scenes/Mountain.unity
     guid: 825a9cc5cad574b6d96fafb4f86186cb
@@ -23,9 +20,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Weather.unity
     guid: b002ab982c605411cb91e17a2b66add2
-  - enabled: 1
-    path: Assets/Scenes/TestArena.unity
-    guid: 04ffce45a2de94e13a42930c76dab7c5
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -8,11 +8,15 @@ namespace Environment
     public class AmbientParticles : MonoBehaviour
     {
         [SerializeField] AmbientParticleStyle style = AmbientParticleStyle.None;
+
+        // Kích thước hộp phát particle nền (Sky=Stars, Volcano=Embers, WeatherTest=Snow)
+        // areaWidth/areaHeight: world unit ≈ mét
         [SerializeField] float areaWidth = 22f;
         [SerializeField] float areaHeight = 12f;
 
         ParticleSystem ps;
 
+        // Bỏ qua nếu None; ngược lại cấu hình và phát particle
         void Start()
         {
             if (style == AmbientParticleStyle.None) return;
@@ -22,17 +26,28 @@ namespace Environment
             ps.Play();
         }
 
+        // Thiết lập thông số khác nhau cho Stars / Snow / Embers
         void Configure(AmbientParticleStyle s)
         {
             var main = ps.main;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            // maxParticles: số hạt tối đa cùng lúc (số lượng, không phải /giây)
             main.maxParticles = s == AmbientParticleStyle.Stars ? 120 : 200;
+
+            // startLifetime: thời gian sống mỗi hạt (giây)
             main.startLifetime = s == AmbientParticleStyle.Embers ? 2.5f : 4f;
+
+            // startSpeed: tốc độ ban đầu (world unit/giây)
             main.startSpeed = s == AmbientParticleStyle.Snow ? 1.2f : 0.15f;
+
+            // gravityModifier: hệ số nhân trọng lực Unity (âm = bay lên)
             main.gravityModifier = s == AmbientParticleStyle.Snow ? 0.08f : 0f;
 
             var emission = ps.emission;
             emission.enabled = true;
+
+            // rateOverTime: hạt sinh ra mỗi giây (hạt/s)
             emission.rateOverTime = s switch
             {
                 AmbientParticleStyle.Stars => 18f,
@@ -52,7 +67,7 @@ namespace Environment
             switch (s)
             {
                 case AmbientParticleStyle.Stars:
-                    main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.07f);
+                    main.startSize = new ParticleSystem.MinMaxCurve(0.03f, 0.07f); // world unit
                     main.startColor = new Color(1f, 1f, 0.9f, 0.85f);
                     grad.SetKeys(
                         new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
@@ -68,7 +83,7 @@ namespace Environment
                 case AmbientParticleStyle.Embers:
                     main.startSize = new ParticleSystem.MinMaxCurve(0.04f, 0.1f);
                     main.startColor = new Color(1f, 0.55f, 0.15f, 0.9f);
-                    main.startSpeed = new ParticleSystem.MinMaxCurve(0.4f, 1.2f);
+                    main.startSpeed = new ParticleSystem.MinMaxCurve(0.4f, 1.2f); // unit/s
                     main.gravityModifier = -0.05f;
                     grad.SetKeys(
                         new[] { new GradientColorKey(new Color(1f, 0.6f, 0.2f), 0f), new GradientColorKey(new Color(1f, 0.2f, 0.05f), 1f) },
