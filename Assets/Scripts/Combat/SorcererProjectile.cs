@@ -1,11 +1,11 @@
-using SkyfallArena.Systems;
+﻿using SkyfallArena.Systems;
 using SkyfallArena.Systems.Items;
 using UnityEngine;
 using ArenaEnvironment = Environment;
 using System.Collections.Generic;
 
 /// <summary>
-/// Đạn tầm xa Sorcerer (pool): bay theo hướng, gây damage + knockback khi chạm địch.
+/// Äáº¡n táº§m xa Sorcerer (pool): bay theo hÆ°á»›ng, gÃ¢y damage + knockback khi cháº¡m Ä‘á»‹ch.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class SorcererProjectile : MonoBehaviour
@@ -43,6 +43,7 @@ public sealed class SorcererProjectile : MonoBehaviour
         LayerMask blockLayerMask,
         Sprite sprite,
         Color tint,
+        float visualWorldSize,
         ItemSpawner itemSpawner,
         bool allowHitDrop,
         float dropChanceOnHit)
@@ -59,6 +60,21 @@ public sealed class SorcererProjectile : MonoBehaviour
             projectile.spriteRenderer.sprite = sprite;
             projectile.spriteRenderer.color = tint;
             projectile.spriteRenderer.flipX = direction.x < 0f;
+            projectile.spriteRenderer.sortingOrder = 25;
+
+            // Keep root scale at 1 so collider radius stays stable.
+            projectile.transform.localScale = Vector3.one;
+            if (sprite != null)
+            {
+                float size = Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
+                float target = Mathf.Max(0.2f, visualWorldSize);
+                float scale = size > 0.0001f ? target / size : 1f;
+                projectile.spriteRenderer.transform.localScale = new Vector3(scale, scale, 1f);
+            }
+            else
+            {
+                projectile.spriteRenderer.transform.localScale = Vector3.one;
+            }
         }
 
         projectile.Initialize(
@@ -99,8 +115,10 @@ public sealed class SorcererProjectile : MonoBehaviour
         collider.isTrigger = true;
         collider.radius = 0.2f;
 
-        var spriteRenderer = projectileObject.AddComponent<SpriteRenderer>();
-        spriteRenderer.sortingOrder = 10;
+        var visual = new GameObject("Visual");
+        visual.transform.SetParent(projectileObject.transform, false);
+        var spriteRenderer = visual.AddComponent<SpriteRenderer>();
+        spriteRenderer.sortingOrder = 25;
 
         projectile.body = rigidBody;
         projectile.triggerCollider = collider;
@@ -194,7 +212,13 @@ public sealed class SorcererProjectile : MonoBehaviour
         if (knockback != null)
             knockback.ApplyKnockback(transform.position, appliedKnockback);
 
-        AttackController.TryApplyDamage(targetRoot, damage);
+        bool damaged = AttackController.TryApplyDamage(targetRoot, damage);
+        if (damaged && owner != null)
+        {
+            var special = owner.GetComponent<SpecialAbilityController>();
+            if (special != null)
+                special.RegisterSuccessfulHit();
+        }
 
         TryDropItem(targetRoot.transform.position);
         Recycle();

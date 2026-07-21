@@ -824,6 +824,9 @@ namespace SkyfallArena.Multiplayer
             if (playerObject.GetComponent<DeathSystem>() == null)
                 playerObject.AddComponent<DeathSystem>();
 
+            if (playerObject.GetComponent<SpecialAbilityController>() == null)
+                playerObject.AddComponent<SpecialAbilityController>();
+
             if (autoAttachFallDetection && playerObject.GetComponent<FallDetection>() == null)
                 playerObject.AddComponent<FallDetection>();
         }
@@ -856,7 +859,7 @@ namespace SkyfallArena.Multiplayer
                     attack2 = Key.K,
                     attack3 = Key.L,
                     attack4 = Key.U,
-                    block = Key.I,
+                    block = Key.S,
                     interact = Key.E,
                     crouch = Key.C,
                     sprint = Key.LeftShift,
@@ -877,7 +880,7 @@ namespace SkyfallArena.Multiplayer
                     attack2 = Key.Numpad2,
                     attack3 = Key.Numpad3,
                     attack4 = Key.Numpad4,
-                    block = Key.Numpad5,
+                    block = Key.DownArrow,
                     interact = Key.NumpadEnter,
                     crouch = Key.RightCtrl,
                     sprint = Key.RightShift,

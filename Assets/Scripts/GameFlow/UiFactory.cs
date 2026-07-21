@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Helper tạo Canvas/Button/Text runtime cho Title, Select, Result.
+    /// Helper UI runtime cho Result overlay và thanh máu (HUD trong trận).
     /// </summary>
     public static class UiFactory
     {
@@ -135,41 +135,6 @@ namespace SkyfallArena.GameFlow
 
             CreateText(go.transform, "Label", label, 28, TextAnchor.MiddleCenter, Color.white);
             return button;
-        }
-
-        public static Button CreateSelectableButton(Transform parent, string name, string label, UnityEngine.Events.UnityAction onClick)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
-            go.transform.SetParent(parent, false);
-
-            var layout = go.GetComponent<LayoutElement>();
-            layout.minHeight = 48f;
-            layout.preferredHeight = 52f;
-
-            var image = go.GetComponent<Image>();
-            ConfigureImage(image, new Color(0.2f, 0.2f, 0.25f, 0.95f));
-
-            var button = go.GetComponent<Button>();
-            button.targetGraphic = image;
-            if (onClick != null)
-                button.onClick.AddListener(onClick);
-
-            CreateText(go.transform, "Label", label, 22, TextAnchor.MiddleCenter, Color.white);
-            return button;
-        }
-
-        public static void SetButtonHighlight(Button button, bool selected)
-        {
-            if (button == null)
-                return;
-
-            var image = button.GetComponent<Image>();
-            if (image == null)
-                return;
-
-            image.color = selected
-                ? new Color(0.85f, 0.55f, 0.15f, 1f)
-                : new Color(0.2f, 0.2f, 0.25f, 0.95f);
         }
     }
 }

@@ -105,6 +105,10 @@ static class SceneSystemsBuilder
         resultSerialized.FindProperty("multiplayerManager").objectReferenceValue = multiplayer;
         resultSerialized.ApplyModifiedPropertiesWithoutUndo();
 
+        // Health bar UI (scene GameObjects) — rebuild via Game Flow menu if missing.
+        if (systemsRoot.transform.Find("HealthBarsCanvas") == null)
+            Debug.LogWarning("[SceneSystemsBuilder] HealthBarsCanvas missing. Run Skyfall Arena > Game Flow > Rebuild Health Bars On Maps.");
+
         var healthSerialized = new SerializedObject(healthBars);
         healthSerialized.FindProperty("multiplayerManager").objectReferenceValue = multiplayer;
         healthSerialized.FindProperty("matchResultSystem").objectReferenceValue = matchResult;

@@ -25,6 +25,7 @@ public sealed class CharacterAnimationSync : MonoBehaviour
     static readonly int IsDeadHash = Animator.StringToHash("IsDead");
     static readonly int IsBlockingHash = Animator.StringToHash("IsBlocking");
     static readonly int ChargeHash = Animator.StringToHash("Charge");
+    static readonly int SpecialHash = Animator.StringToHash("Special");
 
     bool hasSpeedParam;
     bool hasIsGroundedParam;
@@ -32,6 +33,7 @@ public sealed class CharacterAnimationSync : MonoBehaviour
     bool hasIsDeadParam;
     bool hasIsBlockingParam;
     bool hasChargeParam;
+    bool hasSpecialParam;
 
     void Reset()
     {
@@ -94,6 +96,12 @@ public sealed class CharacterAnimationSync : MonoBehaviour
     {
         if (animator != null && hasChargeParam)
             animator.SetTrigger(ChargeHash);
+    }
+
+    public void TriggerSpecial()
+    {
+        if (animator != null && hasSpecialParam)
+            animator.SetTrigger(SpecialHash);
     }
 
     void HandleDamaged(PlayerHealth _, float damageAmount)
@@ -161,6 +169,8 @@ public sealed class CharacterAnimationSync : MonoBehaviour
                 hasIsBlockingParam = true;
             else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.nameHash == ChargeHash)
                 hasChargeParam = true;
+            else if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.nameHash == SpecialHash)
+                hasSpecialParam = true;
         }
     }
 

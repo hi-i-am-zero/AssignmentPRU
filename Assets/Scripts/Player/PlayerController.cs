@@ -180,9 +180,6 @@ public class PlayerController : MonoBehaviour
         if (GetComponent<CharacterInitializer>() == null)
             gameObject.AddComponent<CharacterInitializer>();
 
-        if (GetComponent<ComboController>() == null)
-            gameObject.AddComponent<ComboController>();
-
         if (GetComponent<KnockbackController>() == null)
             gameObject.AddComponent<KnockbackController>();
 

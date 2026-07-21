@@ -44,7 +44,7 @@ public class PlayerUpgrade : MonoBehaviour
     }
 
     /// <summary>
-    /// Attack Chain chỉ tăng damage. Combo/đòn đánh đã mở sẵn theo phím riêng.
+    /// Attack Chain chỉ tăng damage (đòn đánh vẫn theo từng phím).
     /// </summary>
     public void UpgradeAttackChain()
     {

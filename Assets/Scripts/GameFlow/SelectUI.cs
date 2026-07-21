@@ -4,12 +4,12 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Màn Select: P1 trái / Map giữa / P2 phải. Fight chỉ bật khi chọn đủ.
+    /// Màn Select: P1 / Map / P2. UI gắn sẵn trong scene (Inspector).
+    /// Thứ tự nút: Knight, Ninja, Sorcerer — Map: Mountain, Volcano, Sky, Weather, TestArena.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SelectUI : MonoBehaviour
     {
-        // 3 class cho phép chọn (được trùng nhau)
         static readonly CharacterType.Character[] Characters =
         {
             CharacterType.Character.Knight,
@@ -17,238 +17,139 @@ namespace SkyfallArena.GameFlow
             CharacterType.Character.Sorcerer
         };
 
-        // 5 map combat
         static readonly string[] MapSceneNames =
         {
             "Mountain",
             "Volcano",
             "Sky",
-            "WeatherTest",
+            "Weather",
             "TestArena"
         };
+
+        static readonly Color NormalColor = new Color(0.2f, 0.2f, 0.25f, 0.95f);
+        static readonly Color SelectedColor = new Color(0.85f, 0.55f, 0.15f, 1f);
+        static readonly Color FightReadyColor = new Color(0.75f, 0.2f, 0.2f, 1f);
+        static readonly Color FightDisabledColor = new Color(0.35f, 0.35f, 0.38f, 1f);
+
+        [Header("Actions")]
+        [SerializeField] Button backButton;
+        [SerializeField] Button fightButton;
+
+        [Header("Player 1 (Knight / Ninja / Sorcerer)")]
+        [SerializeField] Button[] p1CharacterButtons;
+
+        [Header("Player 2 (Knight / Ninja / Sorcerer)")]
+        [SerializeField] Button[] p2CharacterButtons;
+
+        [Header("Maps")]
+        [SerializeField] Button[] mapButtons;
 
         CharacterType.Character? p1Choice;
         CharacterType.Character? p2Choice;
         string mapChoice;
 
-        Button fightButton;
-        Button[] p1Buttons;
-        Button[] p2Buttons;
-        Button[] mapButtons;
-        bool built;
-
         void Awake()
         {
-            BuildUiIfNeeded();
+            WireButtons();
         }
 
         void Start()
         {
-            BuildUiIfNeeded();
             RefreshHighlights();
             RefreshFightButton();
         }
 
-        void BuildUiIfNeeded()
+        void WireButtons()
         {
-            if (built || transform.Find("SelectCanvas") != null)
+            if (backButton != null)
             {
-                built = true;
-                return;
+                backButton.onClick.RemoveAllListeners();
+                backButton.onClick.AddListener(() => GameSession.Instance.LoadTitle());
             }
 
-            BuildUi();
-            built = true;
-        }
-
-        void BuildUi()
-        {
-            var canvas = UiFactory.CreateCanvas("SelectCanvas", transform);
-
-            UiFactory.CreatePanel(
-                canvas.transform,
-                "Background",
-                new Color(0.06f, 0.07f, 0.1f, 1f),
-                Vector2.zero,
-                Vector2.one);
-
-            var header = UiFactory.CreateText(
-                canvas.transform,
-                "Header",
-                "Select Fighters & Arena",
-                40,
-                TextAnchor.MiddleCenter,
-                Color.white);
-            var headerRect = header.GetComponent<RectTransform>();
-            headerRect.anchorMin = new Vector2(0.1f, 0.88f);
-            headerRect.anchorMax = new Vector2(0.9f, 0.98f);
-            headerRect.offsetMin = Vector2.zero;
-            headerRect.offsetMax = Vector2.zero;
-
-            BuildColumn(canvas.transform, "P1Column", "Player 1", new Vector2(0.03f, 0.18f), new Vector2(0.30f, 0.85f), true);
-            BuildMapColumn(canvas.transform, new Vector2(0.34f, 0.18f), new Vector2(0.66f, 0.85f));
-            BuildColumn(canvas.transform, "P2Column", "Player 2", new Vector2(0.70f, 0.18f), new Vector2(0.97f, 0.85f), false);
-
-            // Back → Title
-            var backButton = UiFactory.CreateButton(
-                canvas.transform,
-                "BackButton",
-                "Back",
-                new Vector2(-200f, 0f),
-                new Vector2(180f, 56f),
-                () => GameSession.Instance.LoadTitle());
-            PlaceBottomButton(backButton.GetComponent<RectTransform>(), new Vector2(0.28f, 0.03f), new Vector2(0.42f, 0.12f));
-
-            fightButton = UiFactory.CreateButton(
-                canvas.transform,
-                "FightButton",
-                "Fight",
-                Vector2.zero,
-                new Vector2(240f, 64f),
-                OnFightPressed);
-            PlaceBottomButton(fightButton.GetComponent<RectTransform>(), new Vector2(0.44f, 0.02f), new Vector2(0.72f, 0.14f));
-        }
-
-        static void PlaceBottomButton(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax)
-        {
-            if (rect == null)
-                return;
-
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-            rect.anchoredPosition = Vector2.zero;
-            rect.sizeDelta = Vector2.zero;
-        }
-
-        // Cột chọn nhân vật (P1 hoặc P2)
-        void BuildColumn(Transform parent, string name, string title, Vector2 anchorMin, Vector2 anchorMax, bool isP1)
-        {
-            var panel = UiFactory.CreatePanel(parent, name, new Color(0.12f, 0.14f, 0.2f, 0.9f), anchorMin, anchorMax);
-
-            var titleText = UiFactory.CreateText(panel.transform, "Title", title, 30, TextAnchor.UpperCenter, Color.white);
-            var titleRect = titleText.GetComponent<RectTransform>();
-            titleRect.anchorMin = new Vector2(0.05f, 0.82f);
-            titleRect.anchorMax = new Vector2(0.95f, 0.98f);
-            titleRect.offsetMin = Vector2.zero;
-            titleRect.offsetMax = Vector2.zero;
-
-            var listGo = new GameObject("List", typeof(RectTransform), typeof(VerticalLayoutGroup));
-            listGo.transform.SetParent(panel.transform, false);
-            var listRect = listGo.GetComponent<RectTransform>();
-            listRect.anchorMin = new Vector2(0.08f, 0.08f);
-            listRect.anchorMax = new Vector2(0.92f, 0.78f);
-            listRect.offsetMin = Vector2.zero;
-            listRect.offsetMax = Vector2.zero;
-
-            var layout = listGo.GetComponent<VerticalLayoutGroup>();
-            layout.spacing = 12f;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = true;
-
-            var buttons = new Button[Characters.Length];
-            for (int i = 0; i < Characters.Length; i++)
+            if (fightButton != null)
             {
-                var character = Characters[i];
-                int captured = i;
-                buttons[i] = UiFactory.CreateSelectableButton(
-                    listGo.transform,
-                    character.ToString(),
-                    character.ToString(),
-                    () =>
-                    {
-                        if (isP1)
-                            p1Choice = Characters[captured];
-                        else
-                            p2Choice = Characters[captured];
-                        RefreshHighlights();
-                        RefreshFightButton();
-                    });
+                fightButton.onClick.RemoveAllListeners();
+                fightButton.onClick.AddListener(OnFightPressed);
             }
 
-            if (isP1)
-                p1Buttons = buttons;
-            else
-                p2Buttons = buttons;
+            WireCharacterButtons(p1CharacterButtons, true);
+            WireCharacterButtons(p2CharacterButtons, false);
+            WireMapButtons();
         }
 
-        // Cột chọn map
-        void BuildMapColumn(Transform parent, Vector2 anchorMin, Vector2 anchorMax)
+        void WireCharacterButtons(Button[] buttons, bool isP1)
         {
-            var panel = UiFactory.CreatePanel(parent, "MapColumn", new Color(0.1f, 0.16f, 0.18f, 0.9f), anchorMin, anchorMax);
+            if (buttons == null)
+                return;
 
-            var titleText = UiFactory.CreateText(panel.transform, "Title", "Map", 30, TextAnchor.UpperCenter, Color.white);
-            var titleRect = titleText.GetComponent<RectTransform>();
-            titleRect.anchorMin = new Vector2(0.05f, 0.82f);
-            titleRect.anchorMax = new Vector2(0.95f, 0.98f);
-            titleRect.offsetMin = Vector2.zero;
-            titleRect.offsetMax = Vector2.zero;
-
-            var listGo = new GameObject("List", typeof(RectTransform), typeof(VerticalLayoutGroup));
-            listGo.transform.SetParent(panel.transform, false);
-            var listRect = listGo.GetComponent<RectTransform>();
-            listRect.anchorMin = new Vector2(0.08f, 0.08f);
-            listRect.anchorMax = new Vector2(0.92f, 0.78f);
-            listRect.offsetMin = Vector2.zero;
-            listRect.offsetMax = Vector2.zero;
-
-            var layout = listGo.GetComponent<VerticalLayoutGroup>();
-            layout.spacing = 10f;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = true;
-
-            mapButtons = new Button[MapSceneNames.Length];
-            for (int i = 0; i < MapSceneNames.Length; i++)
+            int count = Mathf.Min(buttons.Length, Characters.Length);
+            for (int i = 0; i < count; i++)
             {
+                if (buttons[i] == null)
+                    continue;
+
+                int index = i;
+                buttons[i].onClick.RemoveAllListeners();
+                buttons[i].onClick.AddListener(() =>
+                {
+                    if (isP1)
+                        p1Choice = Characters[index];
+                    else
+                        p2Choice = Characters[index];
+
+                    RefreshHighlights();
+                    RefreshFightButton();
+                });
+            }
+        }
+
+        void WireMapButtons()
+        {
+            if (mapButtons == null)
+                return;
+
+            int count = Mathf.Min(mapButtons.Length, MapSceneNames.Length);
+            for (int i = 0; i < count; i++)
+            {
+                if (mapButtons[i] == null)
+                    continue;
+
                 string mapName = MapSceneNames[i];
-                mapButtons[i] = UiFactory.CreateSelectableButton(
-                    listGo.transform,
-                    mapName,
-                    mapName,
-                    () =>
-                    {
-                        mapChoice = mapName;
-                        RefreshHighlights();
-                        RefreshFightButton();
-                    });
+                mapButtons[i].onClick.RemoveAllListeners();
+                mapButtons[i].onClick.AddListener(() =>
+                {
+                    mapChoice = mapName;
+                    RefreshHighlights();
+                    RefreshFightButton();
+                });
             }
         }
 
-        // Highlight nút đang chọn
         void RefreshHighlights()
         {
             for (int i = 0; i < Characters.Length; i++)
             {
-                UiFactory.SetButtonHighlight(p1Buttons[i], p1Choice.HasValue && p1Choice.Value == Characters[i]);
-                UiFactory.SetButtonHighlight(p2Buttons[i], p2Choice.HasValue && p2Choice.Value == Characters[i]);
+                SetHighlight(GetButton(p1CharacterButtons, i), p1Choice.HasValue && p1Choice.Value == Characters[i]);
+                SetHighlight(GetButton(p2CharacterButtons, i), p2Choice.HasValue && p2Choice.Value == Characters[i]);
             }
 
             for (int i = 0; i < MapSceneNames.Length; i++)
-                UiFactory.SetButtonHighlight(mapButtons[i], mapChoice == MapSceneNames[i]);
+                SetHighlight(GetButton(mapButtons, i), mapChoice == MapSceneNames[i]);
         }
 
-        // Fight chỉ interactable khi đủ P1 + P2 + map
         void RefreshFightButton()
         {
             bool ready = p1Choice.HasValue && p2Choice.HasValue && !string.IsNullOrEmpty(mapChoice);
-            if (fightButton != null)
-                fightButton.interactable = ready;
+            if (fightButton == null)
+                return;
 
-            var image = fightButton != null ? fightButton.GetComponent<Image>() : null;
+            fightButton.interactable = ready;
+            var image = fightButton.targetGraphic as Image;
             if (image != null)
-                image.color = ready
-                    ? new Color(0.75f, 0.2f, 0.2f, 1f)
-                    : new Color(0.35f, 0.35f, 0.38f, 1f);
+                image.color = ready ? FightReadyColor : FightDisabledColor;
         }
 
-        // Lưu session rồi load map combat
         void OnFightPressed()
         {
             if (!p1Choice.HasValue || !p2Choice.HasValue || string.IsNullOrEmpty(mapChoice))
@@ -259,6 +160,23 @@ namespace SkyfallArena.GameFlow
             session.SetPlayer2Character(p2Choice.Value);
             session.SetSelectedMap(mapChoice);
             session.LoadSelectedMap();
+        }
+
+        static Button GetButton(Button[] buttons, int index)
+        {
+            if (buttons == null || index < 0 || index >= buttons.Length)
+                return null;
+            return buttons[index];
+        }
+
+        static void SetHighlight(Button button, bool selected)
+        {
+            if (button == null)
+                return;
+
+            var image = button.targetGraphic as Image;
+            if (image != null)
+                image.color = selected ? SelectedColor : NormalColor;
         }
     }
 }

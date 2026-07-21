@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SkyfallArena.Multiplayer;
 using SkyfallArena.Systems;
@@ -7,22 +8,39 @@ using UnityEngine.UI;
 namespace SkyfallArena.GameFlow
 {
     /// <summary>
-    /// Thanh máu P1 (trái) / P2 (phải): fill theo HP + chip vàng thể hiện đoạn vừa mất.
+    /// Thanh máu + MP (hit stacks 0–3) P1/P2: UI gắn sẵn trong scene (Inspector).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerHealthBarsHud : MonoBehaviour
     {
-        sealed class BarView
+        [Serializable]
+        public sealed class BarBindings
         {
-            public RectTransform fillRect;   // thanh HP thật
-            public RectTransform chipRect;   // vệt damage tạm
+            public RectTransform fillRect;
+            public RectTransform chipRect;
             public Image fillImage;
             public Image chipImage;
             public Text label;
             public Text value;
-            public PlayerHealth bound;
             public bool fillFromLeft = true;
+        }
 
+        [Serializable]
+        public sealed class MeterBindings
+        {
+            public Image[] segments = new Image[SpecialAbilityController.MaxStacks];
+            public Text label;
+            public Color emptyColor = new Color(0.15f, 0.15f, 0.18f, 0.95f);
+            public Color filledColor = new Color(0.35f, 0.75f, 1f, 1f);
+            public Color readyColor = new Color(1f, 0.9f, 0.35f, 1f);
+        }
+
+        sealed class BarRuntime
+        {
+            public BarBindings ui;
+            public MeterBindings mpUi;
+            public PlayerHealth bound;
+            public SpecialAbilityController meter;
             public float displayedNormalized = 1f;
             public float chipNormalized = 1f;
             public float targetNormalized = 1f;
@@ -30,8 +48,18 @@ namespace SkyfallArena.GameFlow
             public float maxHp = 100f;
             public float chipDelayUntil;
             public bool chipCatchingUp;
+            public int stacks;
+            public int maxStacks = SpecialAbilityController.MaxStacks;
         }
 
+        [Header("Scene UI")]
+        [SerializeField] GameObject hudRoot;
+        [SerializeField] BarBindings player1Bar;
+        [SerializeField] BarBindings player2Bar;
+        [SerializeField] MeterBindings player1MpBar;
+        [SerializeField] MeterBindings player2MpBar;
+
+        [Header("Systems")]
         [SerializeField] LocalMultiplayerManager multiplayerManager;
         [SerializeField] MatchResultSystem matchResultSystem;
         [SerializeField] bool hideWhenMatchEnds = true;
@@ -39,13 +67,13 @@ namespace SkyfallArena.GameFlow
         [SerializeField, Min(0f)] float chipHoldSeconds = 0.35f;
         [SerializeField, Min(0.01f)] float chipLerpSpeed = 3.5f;
 
-        readonly Dictionary<int, BarView> barsByPlayer = new Dictionary<int, BarView>();
+        readonly Dictionary<int, BarRuntime> barsByPlayer = new Dictionary<int, BarRuntime>();
         readonly List<PlayerHealth> tracked = new List<PlayerHealth>();
+        readonly List<SpecialAbilityController> trackedMeters = new List<SpecialAbilityController>();
 
-        GameObject root;
         float nextScanTime;
         bool visible = true;
-        static Sprite whiteSprite;
+        bool warnedMissingUi;
 
         void Awake()
         {
@@ -53,6 +81,8 @@ namespace SkyfallArena.GameFlow
                 multiplayerManager = FindFirstObjectByType<LocalMultiplayerManager>();
             if (matchResultSystem == null)
                 matchResultSystem = FindFirstObjectByType<MatchResultSystem>();
+
+            BuildRuntimeBars();
         }
 
         void OnEnable()
@@ -75,15 +105,21 @@ namespace SkyfallArena.GameFlow
             UnbindAll();
         }
 
+        void Start()
+        {
+            if (visible)
+            {
+                SetHudActive(true);
+                ScanAndBindPlayers();
+            }
+        }
+
         void Update()
         {
             if (!visible)
                 return;
 
             AnimateBars();
-
-            if (root == null)
-                return;
 
             if (Time.unscaledTime >= nextScanTime)
             {
@@ -92,13 +128,41 @@ namespace SkyfallArena.GameFlow
             }
         }
 
+        void BuildRuntimeBars()
+        {
+            barsByPlayer.Clear();
+
+            if (player1Bar != null && player1Bar.fillRect != null)
+            {
+                barsByPlayer[1] = new BarRuntime
+                {
+                    ui = player1Bar,
+                    mpUi = player1MpBar
+                };
+            }
+
+            if (player2Bar != null && player2Bar.fillRect != null)
+            {
+                barsByPlayer[2] = new BarRuntime
+                {
+                    ui = player2Bar,
+                    mpUi = player2MpBar
+                };
+            }
+
+            if (barsByPlayer.Count == 0 && !warnedMissingUi)
+            {
+                warnedMissingUi = true;
+                Debug.LogError(
+                    "[PlayerHealthBarsHud] Missing scene UI refs. Wire hudRoot / player1Bar / player2Bar in Inspector, or run Skyfall Arena > Game Flow > Rebuild Health Bars On Maps.",
+                    this);
+            }
+        }
+
         void HandleMatchStarted()
         {
             visible = true;
-            EnsureUi();
-            if (root != null)
-                root.SetActive(true);
-
+            SetHudActive(true);
             nextScanTime = 0f;
             ScanAndBindPlayers();
         }
@@ -109,183 +173,21 @@ namespace SkyfallArena.GameFlow
                 return;
 
             visible = false;
-            if (root != null)
-                root.SetActive(false);
+            SetHudActive(false);
         }
 
-        void EnsureUi()
+        void SetHudActive(bool active)
         {
-            if (root != null)
-                return;
-
-            var canvas = UiFactory.CreateCanvas("HealthBarsCanvas", transform);
-            canvas.sortingOrder = 50;
-            root = canvas.gameObject;
-
-            barsByPlayer[1] = CreateBar(canvas.transform, "P1Health", isLeft: true, Color.red);
-            barsByPlayer[2] = CreateBar(canvas.transform, "P2Health", isLeft: false, new Color(0.2f, 0.55f, 1f, 1f));
-        }
-
-        static Sprite GetWhiteSprite()
-        {
-            if (whiteSprite != null)
-                return whiteSprite;
-
-            var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-            tex.SetPixel(0, 0, Color.white);
-            tex.Apply();
-            tex.wrapMode = TextureWrapMode.Clamp;
-            tex.filterMode = FilterMode.Point;
-            whiteSprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-            whiteSprite.name = "HealthBarWhite";
-            return whiteSprite;
-        }
-
-        static BarView CreateBar(Transform parent, string name, bool isLeft, Color fillColor)
-        {
-            var panel = new GameObject(name, typeof(RectTransform), typeof(Image));
-            panel.transform.SetParent(parent, false);
-            var panelRect = panel.GetComponent<RectTransform>();
-            if (isLeft)
-            {
-                panelRect.anchorMin = new Vector2(0.02f, 0.90f);
-                panelRect.anchorMax = new Vector2(0.38f, 0.98f);
-            }
-            else
-            {
-                panelRect.anchorMin = new Vector2(0.62f, 0.90f);
-                panelRect.anchorMax = new Vector2(0.98f, 0.98f);
-            }
-
-            panelRect.offsetMin = Vector2.zero;
-            panelRect.offsetMax = Vector2.zero;
-            var panelImage = panel.GetComponent<Image>();
-            panelImage.sprite = GetWhiteSprite();
-            panelImage.color = new Color(0f, 0f, 0f, 0.55f);
-            panelImage.type = Image.Type.Simple;
-
-            var label = UiFactory.CreateText(
-                panel.transform,
-                "Label",
-                isLeft ? "P1" : "P2",
-                22,
-                isLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight,
-                Color.white);
-            var labelRect = label.GetComponent<RectTransform>();
-            labelRect.anchorMin = new Vector2(0.03f, 0.55f);
-            labelRect.anchorMax = new Vector2(0.97f, 0.95f);
-            labelRect.offsetMin = Vector2.zero;
-            labelRect.offsetMax = Vector2.zero;
-
-            var trackGo = new GameObject("Track", typeof(RectTransform), typeof(Image));
-            trackGo.transform.SetParent(panel.transform, false);
-            var trackRect = trackGo.GetComponent<RectTransform>();
-            trackRect.anchorMin = new Vector2(0.03f, 0.12f);
-            trackRect.anchorMax = new Vector2(0.97f, 0.48f);
-            trackRect.offsetMin = Vector2.zero;
-            trackRect.offsetMax = Vector2.zero;
-            var trackImage = trackGo.GetComponent<Image>();
-            trackImage.sprite = GetWhiteSprite();
-            trackImage.color = new Color(0.15f, 0.15f, 0.18f, 0.95f);
-            trackImage.type = Image.Type.Simple;
-
-            var chipGo = new GameObject("Chip", typeof(RectTransform), typeof(Image));
-            chipGo.transform.SetParent(trackGo.transform, false);
-            var chipRect = chipGo.GetComponent<RectTransform>();
-            StretchFull(chipRect);
-            var chip = chipGo.GetComponent<Image>();
-            chip.sprite = GetWhiteSprite();
-            chip.color = new Color(1f, 0.85f, 0.2f, 0.95f);
-            chip.type = Image.Type.Simple;
-            chip.raycastTarget = false;
-
-            var fillGo = new GameObject("Fill", typeof(RectTransform), typeof(Image));
-            fillGo.transform.SetParent(trackGo.transform, false);
-            var fillRect = fillGo.GetComponent<RectTransform>();
-            StretchFull(fillRect);
-            var fill = fillGo.GetComponent<Image>();
-            fill.sprite = GetWhiteSprite();
-            fill.color = fillColor;
-            fill.type = Image.Type.Simple;
-            fill.raycastTarget = false;
-
-            var value = UiFactory.CreateText(
-                panel.transform,
-                "Value",
-                "100 / 100",
-                18,
-                TextAnchor.MiddleCenter,
-                Color.white);
-            var valueRect = value.GetComponent<RectTransform>();
-            valueRect.anchorMin = new Vector2(0.03f, 0.12f);
-            valueRect.anchorMax = new Vector2(0.97f, 0.48f);
-            valueRect.offsetMin = Vector2.zero;
-            valueRect.offsetMax = Vector2.zero;
-
-            var view = new BarView
-            {
-                fillRect = fillRect,
-                chipRect = chipRect,
-                fillImage = fill,
-                chipImage = chip,
-                label = label,
-                value = value,
-                fillFromLeft = isLeft,
-                displayedNormalized = 1f,
-                chipNormalized = 1f,
-                targetNormalized = 1f
-            };
-
-            ApplyBarWidth(view, 1f, 1f);
-            return view;
-        }
-
-        static void StretchFull(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-        }
-
-        static void ApplyBarWidth(BarView view, float fillNormalized, float chipNormalized)
-        {
-            if (view == null)
-                return;
-
-            SetNormalizedWidth(view.chipRect, chipNormalized, view.fillFromLeft);
-            SetNormalizedWidth(view.fillRect, fillNormalized, view.fillFromLeft);
-        }
-
-        static void SetNormalizedWidth(RectTransform rect, float normalized, bool fromLeft)
-        {
-            if (rect == null)
-                return;
-
-            normalized = Mathf.Clamp01(normalized);
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            if (fromLeft)
-            {
-                // Grow from left edge.
-                rect.pivot = new Vector2(0f, 0.5f);
-                rect.anchorMin = new Vector2(0f, 0f);
-                rect.anchorMax = new Vector2(normalized, 1f);
-            }
-            else
-            {
-                // Grow from right edge (P2).
-                rect.pivot = new Vector2(1f, 0.5f);
-                rect.anchorMin = new Vector2(1f - normalized, 0f);
-                rect.anchorMax = new Vector2(1f, 1f);
-            }
+            if (hudRoot != null)
+                hudRoot.SetActive(active);
         }
 
         void ScanAndBindPlayers()
         {
-            EnsureUi();
+            if (barsByPlayer.Count == 0)
+                BuildRuntimeBars();
+            if (barsByPlayer.Count == 0)
+                return;
 
             var found = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
             for (int i = 0; i < found.Length; i++)
@@ -295,15 +197,11 @@ namespace SkyfallArena.GameFlow
                     continue;
 
                 int playerId = health.PlayerId;
-                if (playerId != 1 && playerId != 2)
-                    continue;
-
                 if (!barsByPlayer.TryGetValue(playerId, out var view))
                     continue;
 
                 if (view.bound == health)
                 {
-                    // Keep target in sync even if already bound.
                     float safeMax = Mathf.Max(1f, health.MaxHealth);
                     float normalized = Mathf.Clamp01(health.CurrentHealth / safeMax);
                     if (!Mathf.Approximately(view.targetNormalized, normalized)
@@ -312,6 +210,7 @@ namespace SkyfallArena.GameFlow
                         HandleHealthChanged(health, health.CurrentHealth, health.MaxHealth);
                     }
 
+                    BindMeter(view, health.GetComponent<SpecialAbilityController>());
                     continue;
                 }
 
@@ -324,6 +223,83 @@ namespace SkyfallArena.GameFlow
                     tracked.Add(health);
 
                 SetBarImmediate(view, health.CurrentHealth, health.MaxHealth, playerId);
+                BindMeter(view, health.GetComponent<SpecialAbilityController>());
+            }
+        }
+
+        void BindMeter(BarRuntime view, SpecialAbilityController meter)
+        {
+            if (view == null)
+                return;
+
+            if (view.meter == meter)
+            {
+                if (meter != null)
+                    ApplyMeter(view, meter.CurrentStacks, SpecialAbilityController.MaxStacks);
+                return;
+            }
+
+            if (view.meter != null)
+                view.meter.MeterChanged -= HandleMeterChanged;
+
+            view.meter = meter;
+            if (meter == null)
+            {
+                ApplyMeter(view, 0, SpecialAbilityController.MaxStacks);
+                return;
+            }
+
+            meter.MeterChanged += HandleMeterChanged;
+            if (!trackedMeters.Contains(meter))
+                trackedMeters.Add(meter);
+
+            ApplyMeter(view, meter.CurrentStacks, SpecialAbilityController.MaxStacks);
+        }
+
+        void HandleMeterChanged(SpecialAbilityController meter, int current, int max)
+        {
+            if (meter == null)
+                return;
+
+            int playerId = meter.PlayerId;
+            if (playerId <= 0 && meter.TryGetComponent<PlayerHealth>(out var health))
+                playerId = health.PlayerId;
+
+            if (!barsByPlayer.TryGetValue(playerId, out var view) || view == null)
+                return;
+
+            ApplyMeter(view, current, max);
+        }
+
+        static void ApplyMeter(BarRuntime view, int stacks, int maxStacks)
+        {
+            view.stacks = Mathf.Clamp(stacks, 0, Mathf.Max(1, maxStacks));
+            view.maxStacks = Mathf.Max(1, maxStacks);
+
+            var mp = view.mpUi;
+            if (mp == null)
+                return;
+
+            if (mp.label != null)
+                mp.label.text = view.stacks >= view.maxStacks ? "READY" : "MP";
+
+            if (mp.segments == null)
+                return;
+
+            bool ready = view.stacks >= view.maxStacks;
+            for (int i = 0; i < mp.segments.Length; i++)
+            {
+                var segment = mp.segments[i];
+                if (segment == null)
+                    continue;
+
+                bool lit = i < view.stacks;
+                if (!lit)
+                    segment.color = mp.emptyColor;
+                else if (ready)
+                    segment.color = mp.readyColor;
+                else
+                    segment.color = mp.filledColor;
             }
         }
 
@@ -332,8 +308,7 @@ namespace SkyfallArena.GameFlow
             if (health == null)
                 return;
 
-            int playerId = health.PlayerId;
-            if (!barsByPlayer.TryGetValue(playerId, out var view) || view == null)
+            if (!barsByPlayer.TryGetValue(health.PlayerId, out var view) || view == null)
                 return;
 
             float safeMax = Mathf.Max(1f, max);
@@ -344,8 +319,8 @@ namespace SkyfallArena.GameFlow
             view.maxHp = safeMax;
             view.targetNormalized = newNormalized;
 
-            if (view.label != null)
-                view.label.text = playerId == 1 ? "Player 1" : "Player 2";
+            if (view.ui.label != null)
+                view.ui.label.text = health.PlayerId == 1 ? "Player 1" : "Player 2";
 
             if (newNormalized < previousTarget - 0.0001f)
             {
@@ -363,7 +338,7 @@ namespace SkyfallArena.GameFlow
             RefreshValueText(view);
         }
 
-        void SetBarImmediate(BarView view, float current, float max, int playerId)
+        void SetBarImmediate(BarRuntime view, float current, float max, int playerId)
         {
             float safeMax = Mathf.Max(1f, max);
             float normalized = Mathf.Clamp01(current / safeMax);
@@ -376,10 +351,10 @@ namespace SkyfallArena.GameFlow
             view.chipCatchingUp = false;
             view.chipDelayUntil = 0f;
 
-            ApplyBarWidth(view, normalized, normalized);
+            ApplyBarWidth(view.ui, normalized, normalized);
 
-            if (view.label != null)
-                view.label.text = playerId == 1 ? "Player 1" : "Player 2";
+            if (view.ui.label != null)
+                view.ui.label.text = playerId == 1 ? "Player 1" : "Player 2";
 
             RefreshValueText(view);
         }
@@ -394,7 +369,7 @@ namespace SkyfallArena.GameFlow
             foreach (var pair in barsByPlayer)
             {
                 var view = pair.Value;
-                if (view == null)
+                if (view?.ui == null)
                     continue;
 
                 view.displayedNormalized = Mathf.MoveTowards(
@@ -417,19 +392,51 @@ namespace SkyfallArena.GameFlow
                     view.chipNormalized = Mathf.Max(view.chipNormalized, view.displayedNormalized);
                 }
 
-                ApplyBarWidth(view, view.displayedNormalized, view.chipNormalized);
+                ApplyBarWidth(view.ui, view.displayedNormalized, view.chipNormalized);
                 RefreshValueText(view);
             }
         }
 
-        static void RefreshValueText(BarView view)
+        static void RefreshValueText(BarRuntime view)
         {
-            if (view == null || view.value == null)
+            if (view?.ui?.value == null)
                 return;
 
             int shown = Mathf.Max(0, Mathf.CeilToInt(view.targetNormalized * view.maxHp));
             int max = Mathf.CeilToInt(view.maxHp);
-            view.value.text = $"{shown} / {max}";
+            view.ui.value.text = $"{shown} / {max}";
+        }
+
+        static void ApplyBarWidth(BarBindings ui, float fillNormalized, float chipNormalized)
+        {
+            if (ui == null)
+                return;
+
+            SetNormalizedWidth(ui.chipRect, chipNormalized, ui.fillFromLeft);
+            SetNormalizedWidth(ui.fillRect, fillNormalized, ui.fillFromLeft);
+        }
+
+        static void SetNormalizedWidth(RectTransform rect, float normalized, bool fromLeft)
+        {
+            if (rect == null)
+                return;
+
+            normalized = Mathf.Clamp01(normalized);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            if (fromLeft)
+            {
+                rect.pivot = new Vector2(0f, 0.5f);
+                rect.anchorMin = new Vector2(0f, 0f);
+                rect.anchorMax = new Vector2(normalized, 1f);
+            }
+            else
+            {
+                rect.pivot = new Vector2(1f, 0.5f);
+                rect.anchorMin = new Vector2(1f - normalized, 0f);
+                rect.anchorMax = new Vector2(1f, 1f);
+            }
         }
 
         void UnbindAll()
@@ -442,10 +449,21 @@ namespace SkyfallArena.GameFlow
 
             tracked.Clear();
 
+            for (int i = 0; i < trackedMeters.Count; i++)
+            {
+                if (trackedMeters[i] != null)
+                    trackedMeters[i].MeterChanged -= HandleMeterChanged;
+            }
+
+            trackedMeters.Clear();
+
             foreach (var pair in barsByPlayer)
             {
                 if (pair.Value != null)
+                {
                     pair.Value.bound = null;
+                    pair.Value.meter = null;
+                }
             }
         }
     }

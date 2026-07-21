@@ -21,7 +21,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Sky.unity
     guid: 690392c3b833a4780afd0c76d21bea64
   - enabled: 1
-    path: Assets/Scenes/WeatherTest.unity
+    path: Assets/Scenes/Weather.unity
     guid: b002ab982c605411cb91e17a2b66add2
   - enabled: 1
     path: Assets/Scenes/TestArena.unity

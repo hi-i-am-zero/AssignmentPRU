@@ -23,7 +23,7 @@ public class AttackController : MonoBehaviour
     [SerializeField] bool useRangedProjectilesForSorcerer = true;
     [SerializeField, Min(0.5f)] float sorcererProjectileSpeed = 11f;
     [SerializeField, Min(0.5f)] float sorcererFallbackRange = 6f;
-    [SerializeField, Range(0.05f, 1f)] float sorcererRangeFractionOfMapWidth = 0.25f;
+    [SerializeField, Range(0.05f, 1f)] float sorcererRangeFractionOfMapWidth = 0.85f;
     [SerializeField, Min(0.05f)] float sorcererProjectileRadius = 0.2f;
     [SerializeField] Vector2 sorcererProjectileSpawnOffset = new Vector2(0.65f, 0f);
     [SerializeField] Color sorcererProjectileTint = new Color(0.65f, 0.9f, 1f, 0.95f);
@@ -38,7 +38,6 @@ public class AttackController : MonoBehaviour
 
     CharacterStatus stats;
     PlayerController playerController;
-    ComboController comboController;
     KnockbackController selfKnockback;
     Animator animator;
     SpriteRenderer spriteRenderer;
@@ -56,7 +55,6 @@ public class AttackController : MonoBehaviour
     {
         stats = GetComponent<CharacterStatus>();
         playerController = GetComponent<PlayerController>();
-        comboController = GetComponent<ComboController>();
         selfKnockback = GetComponent<KnockbackController>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -71,7 +69,38 @@ public class AttackController : MonoBehaviour
             sorcererProjectileBlockLayers = LayerMask.GetMask(ArenaEnvironment.GameLayers.Ground);
 
         EnsurePlayerLayerMask();
+        EnsureSorcererProjectileSprites();
+
+        if (ShouldUseSorcererProjectile())
+            sorcererRangeFractionOfMapWidth = 0.85f;
     }
+
+    void EnsureSorcererProjectileSprites()
+    {
+        if (!useRangedProjectilesForSorcerer)
+            return;
+
+#if UNITY_EDITOR
+        if (sorcererProjectileType1Sprite == null)
+            sorcererProjectileType1Sprite = LoadEditorSprite("Assets/Sprite/Sorcerer/SorcererCharge_1.png");
+        if (sorcererProjectileType2Sprite == null)
+            sorcererProjectileType2Sprite = LoadEditorSprite("Assets/Sprite/Sorcerer/SorcererCharge_2.png");
+#endif
+    }
+
+#if UNITY_EDITOR
+    static Sprite LoadEditorSprite(string assetPath)
+    {
+        var assets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(assetPath);
+        for (int i = 0; i < assets.Length; i++)
+        {
+            if (assets[i] is Sprite sprite)
+                return sprite;
+        }
+
+        return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+    }
+#endif
 
     void EnsurePlayerLayerMask()
     {
@@ -162,8 +191,8 @@ public class AttackController : MonoBehaviour
 
     bool IsAttackSlotAllowed(int attackSlot)
     {
-        int maxCombo = comboController != null ? Mathf.Max(1, comboController.maxCombo) : 3;
-        if (attackSlot < 1 || attackSlot > maxCombo)
+        // Đòn đơn: 1–3 mọi class; đòn 4 chỉ Sorcerer.
+        if (attackSlot < 1 || attackSlot > 4)
             return false;
 
         if (attackSlot == 4)
@@ -175,7 +204,7 @@ public class AttackController : MonoBehaviour
         return true;
     }
 
-    void Attack(int comboIndex)
+    void Attack(int attackSlot)
     {
         if (stats == null)
             return;
@@ -183,12 +212,10 @@ public class AttackController : MonoBehaviour
         if (attackPoint == null)
             attackPoint = transform;
 
-        if (comboController != null)
-            comboController.SetComboStep(comboIndex);
-
+        // Param Animator tên "Combo" chỉ chọn clip Attack_1..4 (không còn hệ combo chuỗi).
         if (animator != null)
         {
-            animator.SetInteger("Combo", comboIndex);
+            animator.SetInteger("Combo", attackSlot);
             animator.SetTrigger("Attack");
         }
 
@@ -196,7 +223,7 @@ public class AttackController : MonoBehaviour
 
         if (ShouldUseSorcererProjectile())
         {
-            FireSorcererProjectile(comboIndex);
+            FireSorcererProjectile(attackSlot);
             return;
         }
 
@@ -288,6 +315,10 @@ public class AttackController : MonoBehaviour
         {
             TryDropItemOnHit(targetRoot.transform.position);
             TriggerHitStop();
+
+            var special = GetComponent<SpecialAbilityController>();
+            if (special != null)
+                special.RegisterSuccessfulHit();
         }
     }
 
@@ -412,7 +443,7 @@ public class AttackController : MonoBehaviour
             && characterType.character == CharacterType.Character.Sorcerer;
     }
 
-    void FireSorcererProjectile(int comboIndex)
+    void FireSorcererProjectile(int attackSlot)
     {
         EnsurePlayerLayerMask();
 
@@ -425,8 +456,18 @@ public class AttackController : MonoBehaviour
             direction.x * Mathf.Abs(sorcererProjectileSpawnOffset.x),
             sorcererProjectileSpawnOffset.y);
 
-        int projectileType = comboIndex % 2 == 0 ? 2 : 1;
+        int projectileType = attackSlot % 2 == 0 ? 2 : 1;
         Sprite projectileSprite = projectileType == 1 ? sorcererProjectileType1Sprite : sorcererProjectileType2Sprite;
+        if (projectileSprite == null)
+            projectileSprite = sorcererProjectileType1Sprite != null
+                ? sorcererProjectileType1Sprite
+                : sorcererProjectileType2Sprite;
+
+        if (projectileSprite == null)
+        {
+            Debug.LogWarning("[AttackController] Missing Sorcerer projectile sprite.", this);
+            return;
+        }
 
         float speed = Mathf.Max(0.5f, sorcererProjectileSpeed);
         float fixedRange = CalculateSorcererProjectileRange();
@@ -445,6 +486,7 @@ public class AttackController : MonoBehaviour
             blockLayerMask: sorcererProjectileBlockLayers,
             sprite: projectileSprite,
             tint: sorcererProjectileTint,
+            visualWorldSize: 0.65f,
             itemSpawner: itemSpawner,
             allowHitDrop: dropItemOnHit,
             dropChanceOnHit: dropChanceOnHit);

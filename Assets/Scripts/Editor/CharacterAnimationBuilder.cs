@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SkyfallArena.Systems.Items;
@@ -7,7 +8,7 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-static class CharacterAnimationBuilder
+public static class CharacterAnimationBuilder
 {
     const string SpriteRoot = "Assets/Sprite";
     const string AnimationRoot = "Assets/Animations";
@@ -39,6 +40,7 @@ static class CharacterAnimationBuilder
         public int ComboCount;
         public bool UseShield;
         public bool UseCharge;
+        public bool UseSpecial;
         public List<ClipSpec> Clips;
 
         public CharacterSpec(
@@ -47,6 +49,7 @@ static class CharacterAnimationBuilder
             int comboCount,
             bool useShield,
             bool useCharge,
+            bool useSpecial,
             List<ClipSpec> clips)
         {
             CharacterName = characterName;
@@ -54,11 +57,32 @@ static class CharacterAnimationBuilder
             ComboCount = comboCount;
             UseShield = useShield;
             UseCharge = useCharge;
+            UseSpecial = useSpecial;
             Clips = clips;
         }
     }
 
     static readonly Regex TrailingNumberRegex = new Regex(@"(\d+)$", RegexOptions.Compiled);
+    const string RebuildSpecialFlag = "Assets/Editor/REBUILD_CHARACTER_SPECIAL.flag";
+
+    [InitializeOnLoadMethod]
+    static void AutoRebuildSpecialWhenFlagPresent()
+    {
+        EditorApplication.delayCall += () =>
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
+            if (!File.Exists(RebuildSpecialFlag))
+                return;
+
+            File.Delete(RebuildSpecialFlag);
+            if (File.Exists(RebuildSpecialFlag + ".meta"))
+                File.Delete(RebuildSpecialFlag + ".meta");
+
+            BuildAndAssignAllCharacters();
+        };
+    }
 
     [MenuItem("Skyfall Arena/Animation/Build Character Animations")]
     public static void BuildCharacterAnimations()
@@ -226,7 +250,7 @@ static class CharacterAnimationBuilder
 
         if (forceRebuildController || controllerCreatedNow || IsControllerEmpty(controller))
         {
-            ConfigureController(controller, clipsByState, spec.ComboCount, spec.UseShield, spec.UseCharge);
+            ConfigureController(controller, clipsByState, spec.ComboCount, spec.UseShield, spec.UseCharge, spec.UseSpecial);
         }
         else
         {
@@ -328,7 +352,8 @@ static class CharacterAnimationBuilder
         Dictionary<string, AnimationClip> clipsByState,
         int comboCount,
         bool useShield,
-        bool useCharge)
+        bool useCharge,
+        bool useSpecial)
     {
         EnsureParameter(controller, "Speed", AnimatorControllerParameterType.Float);
         EnsureParameter(controller, "IsGrounded", AnimatorControllerParameterType.Bool);
@@ -338,6 +363,7 @@ static class CharacterAnimationBuilder
         EnsureParameter(controller, "IsDead", AnimatorControllerParameterType.Bool);
         EnsureParameter(controller, "IsBlocking", AnimatorControllerParameterType.Bool);
         EnsureParameter(controller, "Charge", AnimatorControllerParameterType.Trigger);
+        EnsureParameter(controller, "Special", AnimatorControllerParameterType.Trigger);
         SetDefaultBool(controller, "IsGrounded", true);
 
         var layer = controller.layers[0];
@@ -535,6 +561,23 @@ static class CharacterAnimationBuilder
             }
         }
 
+        if (useSpecial && states.TryGetValue("Special", out var special))
+        {
+            var anyToSpecial = stateMachine.AddAnyStateTransition(special);
+            anyToSpecial.hasExitTime = false;
+            anyToSpecial.duration = 0.02f;
+            anyToSpecial.AddCondition(AnimatorConditionMode.If, 0f, "Special");
+            anyToSpecial.AddCondition(AnimatorConditionMode.IfNot, 0f, "IsDead");
+
+            if (idle != null)
+            {
+                var specialToIdle = special.AddTransition(idle);
+                specialToIdle.hasExitTime = true;
+                specialToIdle.exitTime = 0.95f;
+                specialToIdle.duration = 0.05f;
+            }
+        }
+
         controller.layers = new[] { layer };
         EditorUtility.SetDirty(controller);
     }
@@ -702,11 +745,6 @@ static class CharacterAnimationBuilder
         if (root.GetComponent<CharacterInitializer>() == null)
             root.AddComponent<CharacterInitializer>();
 
-        var comboController = root.GetComponent<ComboController>();
-        if (comboController == null)
-            comboController = root.AddComponent<ComboController>();
-        comboController.maxCombo = Mathf.Max(1, spec.ComboCount);
-
         if (root.GetComponent<KnockbackController>() == null)
             root.AddComponent<KnockbackController>();
 
@@ -729,18 +767,70 @@ static class CharacterAnimationBuilder
         if (playerMask != 0)
             attackController.playerLayer = playerMask;
 
-        if (ResolveCharacterEnum(spec.CharacterName) == CharacterType.Character.Sorcerer)
+        var special = root.GetComponent<SpecialAbilityController>();
+        if (special == null)
+            special = root.AddComponent<SpecialAbilityController>();
+
+        Sprite[] shurikenFrames = LoadAllSprites($"{SpriteRoot}/Ninja", "Shuriken");
+        Sprite[] fireballFrames = LoadAllSprites($"{SpriteRoot}/Sorcerer", "Fireball");
+        Sprite shuriken = shurikenFrames != null && shurikenFrames.Length > 0 ? shurikenFrames[0] : null;
+        Sprite fireball = fireballFrames != null && fireballFrames.Length > 0 ? fireballFrames[0] : null;
+
+        var serializedSpecial = new SerializedObject(special);
+        serializedSpecial.FindProperty("shurikenSprite").objectReferenceValue = shuriken;
+        serializedSpecial.FindProperty("fireballSprite").objectReferenceValue = fireball;
+        serializedSpecial.FindProperty("knightHealFraction").floatValue = 0.07f;
+        serializedSpecial.FindProperty("ninjaSpecialDamageMultiplier").floatValue = 1.8f;
+        serializedSpecial.FindProperty("sorcererSpecialDamageMultiplier").floatValue = 1.6f;
+        AssignSpriteArray(serializedSpecial.FindProperty("shurikenFrames"), shurikenFrames);
+        AssignSpriteArray(serializedSpecial.FindProperty("fireballFrames"), fireballFrames);
+        serializedSpecial.ApplyModifiedPropertiesWithoutUndo();
+
+        var character = ResolveCharacterEnum(spec.CharacterName);
+        var serializedAttackController = new SerializedObject(attackController);
+        if (character == CharacterType.Character.Sorcerer)
         {
             string spriteFolder = $"{SpriteRoot}/{spec.CharacterName}";
-            Sprite projectile1 = LoadFirstSprite(spriteFolder, "SorcererCharge_1", "SorcererCharge");
-            Sprite projectile2 = LoadFirstSprite(spriteFolder, "SorcererCharge_2", "SorcererCharge");
+            Sprite projectile1 = LoadFirstSprite(spriteFolder, "SorcererCharge_1", "SorcererCharge", "Fireball");
+            Sprite projectile2 = LoadFirstSprite(spriteFolder, "SorcererCharge_2", "SorcererCharge", "Fireball");
 
-            var serializedAttackController = new SerializedObject(attackController);
             serializedAttackController.FindProperty("useRangedProjectilesForSorcerer").boolValue = true;
             serializedAttackController.FindProperty("sorcererProjectileType1Sprite").objectReferenceValue = projectile1;
             serializedAttackController.FindProperty("sorcererProjectileType2Sprite").objectReferenceValue = projectile2;
-            serializedAttackController.ApplyModifiedPropertiesWithoutUndo();
+            serializedAttackController.FindProperty("sorcererRangeFractionOfMapWidth").floatValue = 0.85f;
         }
+
+        serializedAttackController.ApplyModifiedPropertiesWithoutUndo();
+
+        var block = root.GetComponent<PlayerBlockController>();
+        if (block != null)
+        {
+            var serializedBlock = new SerializedObject(block);
+            float kbMult = character == CharacterType.Character.Knight ? 0.45f : 0.35f;
+            serializedBlock.FindProperty("knockbackMultiplierWhileBlocking").floatValue = kbMult;
+            serializedBlock.ApplyModifiedPropertiesWithoutUndo();
+        }
+    }
+
+    static void AssignSpriteArray(SerializedProperty arrayProp, Sprite[] sprites)
+    {
+        if (arrayProp == null || !arrayProp.isArray)
+            return;
+
+        int count = sprites != null ? sprites.Length : 0;
+        arrayProp.arraySize = count;
+        for (int i = 0; i < count; i++)
+            arrayProp.GetArrayElementAtIndex(i).objectReferenceValue = sprites[i];
+    }
+
+    static Sprite[] LoadAllSprites(string folderPath, params string[] candidates)
+    {
+        string sourcePath = ResolveSourcePath(folderPath, candidates);
+        if (string.IsNullOrEmpty(sourcePath))
+            return null;
+
+        var sprites = LoadSpritesFromSheet(sourcePath);
+        return sprites != null && sprites.Count > 0 ? sprites.ToArray() : null;
     }
 
     static Transform EnsureAttackPoint(Transform root)
@@ -812,6 +902,7 @@ static class CharacterAnimationBuilder
             comboCount: 3,
             useShield: true,
             useCharge: false,
+            useSpecial: false,
             clips: new List<ClipSpec>
             {
                 new ClipSpec("Idle", loop: true, sourcePngFileNames: new[] { "KnightIdle" }),
@@ -832,6 +923,7 @@ static class CharacterAnimationBuilder
             comboCount: 3,
             useShield: true,
             useCharge: false,
+            useSpecial: true,
             clips: new List<ClipSpec>
             {
                 new ClipSpec("Idle", loop: true, sourcePngFileNames: new[] { "NinjaIdle" }),
@@ -843,7 +935,8 @@ static class CharacterAnimationBuilder
                 new ClipSpec("Attack_3", loop: false, sourcePngFileNames: new[] { "NinjaAttack_3" }),
                 new ClipSpec("Hurt", loop: false, sourcePngFileNames: new[] { "NinjaHurt" }),
                 new ClipSpec("Death", loop: false, sourcePngFileNames: new[] { "NinjaDead" }),
-                new ClipSpec("Shield", loop: true, optional: true, sourcePngFileNames: new[] { "NinjaShield" })
+                new ClipSpec("Shield", loop: true, optional: true, sourcePngFileNames: new[] { "NinjaShield" }),
+                new ClipSpec("Special", loop: false, optional: true, sourcePngFileNames: new[] { "NinjaAttack_3", "NinjaAttack_2" })
             });
 
         yield return new CharacterSpec(
@@ -852,6 +945,7 @@ static class CharacterAnimationBuilder
             comboCount: 4,
             useShield: false,
             useCharge: true,
+            useSpecial: true,
             clips: new List<ClipSpec>
             {
                 new ClipSpec("Idle", loop: true, sourcePngFileNames: new[] { "SorcererIdle" }),
@@ -864,7 +958,8 @@ static class CharacterAnimationBuilder
                 new ClipSpec("Attack_4", loop: false, sourcePngFileNames: new[] { "SorcererCharge_2", "SorcererAttack_4" }),
                 new ClipSpec("Hurt", loop: false, sourcePngFileNames: new[] { "SorcererHurt" }),
                 new ClipSpec("Death", loop: false, sourcePngFileNames: new[] { "SorcererDead" }),
-                new ClipSpec("Charge", loop: false, optional: true, sourcePngFileNames: new[] { "SorcererCharge", "SorcererCharge_1", "SorcererCharge_2" })
+                new ClipSpec("Charge", loop: false, optional: true, sourcePngFileNames: new[] { "SorcererCharge", "SorcererCharge_1", "SorcererCharge_2" }),
+                new ClipSpec("Special", loop: false, optional: true, sourcePngFileNames: new[] { "SorcererScream", "SorcererAttack_4" })
             });
     }
 }

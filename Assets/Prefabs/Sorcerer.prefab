@@ -20,10 +20,10 @@ GameObject:
   - component: {fileID: 2084866899265484301}
   - component: {fileID: 3268035592263629712}
   - component: {fileID: 417353652590584389}
-  - component: {fileID: 7949934527973054836}
   - component: {fileID: 8579274487905615263}
   - component: {fileID: 7689589535025046827}
   - component: {fileID: 4705355936363540754}
+  - component: {fileID: 2548351232395832408}
   m_Layer: 0
   m_Name: Sorcerer
   m_TagString: Untagged
@@ -123,7 +123,7 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 3
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: ea75ff99d5138c04b9ec80247717bdc4, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -305,20 +305,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 872dc475b34f7ef4d8adbd3538402822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterInitializer
---- !u!114 &7949934527973054836
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4732108334705783073}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 17596078d10202549843e21b251408bb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ComboController
-  maxCombo: 4
-  comboResetTime: 0.5
 --- !u!114 &8579274487905615263
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -355,7 +341,7 @@ MonoBehaviour:
   useRangedProjectilesForSorcerer: 1
   sorcererProjectileSpeed: 11
   sorcererFallbackRange: 6
-  sorcererRangeFractionOfMapWidth: 0.25
+  sorcererRangeFractionOfMapWidth: 0.85
   sorcererProjectileRadius: 0.2
   sorcererProjectileSpawnOffset: {x: 0.65, y: 0}
   sorcererProjectileTint: {r: 0.65, g: 0.9, b: 1, a: 0.95}
@@ -385,6 +371,60 @@ MonoBehaviour:
   inputSource: {fileID: 0}
   playerController: {fileID: 0}
   characterType: {fileID: 0}
+--- !u!114 &2548351232395832408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4732108334705783073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpecialAbilityController
+  knightHealFraction: 0.07
+  ninjaSpecialDamageMultiplier: 1.8
+  sorcererSpecialDamageMultiplier: 1.6
+  projectileSpeed: 12
+  projectileRadius: 0.22
+  projectileSpawnOffset: {x: 0.7, y: 0.1}
+  shurikenSprite: {fileID: -6454969007074664543, guid: 33d5eee4465b7d74d9b10a776b35f0f4, type: 3}
+  fireballSprite: {fileID: -6607481912129624618, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  shurikenFrames:
+  - {fileID: -6454969007074664543, guid: 33d5eee4465b7d74d9b10a776b35f0f4, type: 3}
+  - {fileID: -1711769274298023544, guid: 33d5eee4465b7d74d9b10a776b35f0f4, type: 3}
+  - {fileID: -4147570122916513537, guid: 33d5eee4465b7d74d9b10a776b35f0f4, type: 3}
+  - {fileID: -2755136619034746637, guid: 33d5eee4465b7d74d9b10a776b35f0f4, type: 3}
+  fireballFrames:
+  - {fileID: -6607481912129624618, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -7250195882505504687, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 4403933487624526528, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 8927358698389672400, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 2250600637640065238, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -4701697456131926120, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -1711208824211276139, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -3769374411695510437, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 2335414765099883281, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 5467872547263643923, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 7865523673118177332, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 5609376815085826905, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 6785216056351099214, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -3442395235638600575, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 7387481953171491385, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -2223868357131864047, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -8038693560275362801, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 9068362806395593734, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -6521568846215467730, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -6293777899235253248, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -581655635447691510, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 8399202273847217681, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -7193232890413319963, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: 7626771561560185678, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  - {fileID: -492577791241748177, guid: 171b3eeaaccddb64484a6b479135abb0, type: 3}
+  shurikenTint: {r: 1, g: 1, b: 1, a: 1}
+  fireballTint: {r: 1, g: 0.55, b: 0.2, a: 1}
+  projectileVisualSize: 0.7
 --- !u!1 &6132258174007801064
 GameObject:
   m_ObjectHideFlags: 0

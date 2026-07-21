@@ -106,7 +106,7 @@ namespace Environment.Editor
         {
             if (force)
             {
-                string[] scenes = { "TestArena", "Mountain", "Volcano", "Sky", "WeatherTest" };
+                string[] scenes = { "TestArena", "Mountain", "Volcano", "Sky", "Weather" };
                 foreach (var s in scenes)
                 {
                     var path = $"{ScenesPath}/{s}.unity";
@@ -121,7 +121,7 @@ namespace Environment.Editor
             try { BuildMountainMap(); } catch (System.Exception e) { Debug.LogError($"[Environment] Mountain failed: {e}"); }
             try { BuildVolcanoMap(); } catch (System.Exception e) { Debug.LogError($"[Environment] Volcano failed: {e}"); }
             try { BuildSkyMap(); } catch (System.Exception e) { Debug.LogError($"[Environment] Sky failed: {e}"); }
-            try { BuildWeatherTestArena(); } catch (System.Exception e) { Debug.LogError($"[Environment] WeatherTest failed: {e}"); }
+            try { BuildWeatherArena(); } catch (System.Exception e) { Debug.LogError($"[Environment] Weather failed: {e}"); }
             UpdateBuildSettings();
 
             AssetDatabase.SaveAssets();
@@ -395,10 +395,10 @@ namespace Environment.Editor
             SaveScene(scene, $"{ScenesPath}/Sky.unity");
         }
 
-        static void BuildWeatherTestArena()
+        static void BuildWeatherArena()
         {
             var bg = new Color(0.38f, 0.42f, 0.52f);
-            var (scene, root) = CreateBaseScene("WeatherTest", bg);
+            var (scene, root) = CreateBaseScene("Weather", bg);
             CreateMapBackground(root, "bg_storm_full", bg, AmbientParticleStyle.Snow);
             CreateBoundaries(root, ArenaW, ArenaH);
 
@@ -430,8 +430,8 @@ namespace Environment.Editor
             });
             CreateItemSpawns(root, new[] { StandOn(crown, crownSize, 0) });
             CreateWeatherSystem(root, WeatherType.Storm, lightning, new[] { wind }, Vector2.right);
-            AddArenaManager(root, "Weather Test");
-            SaveScene(scene, $"{ScenesPath}/WeatherTest.unity");
+            AddArenaManager(root, "Weather");
+            SaveScene(scene, $"{ScenesPath}/Weather.unity");
         }
 
         #region Weather & Effects
@@ -1017,7 +1017,7 @@ namespace Environment.Editor
                 new EditorBuildSettingsScene($"{ScenesPath}/Mountain.unity", true),
                 new EditorBuildSettingsScene($"{ScenesPath}/Volcano.unity", true),
                 new EditorBuildSettingsScene($"{ScenesPath}/Sky.unity", true),
-                new EditorBuildSettingsScene($"{ScenesPath}/WeatherTest.unity", true),
+                new EditorBuildSettingsScene($"{ScenesPath}/Weather.unity", true),
             };
         }
 

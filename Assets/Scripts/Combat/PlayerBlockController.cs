@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using SkyfallArena.Multiplayer;
 
 /// <summary>
-/// Block: giữ I / Numpad5 — giảm damage + knockback, không đánh/di chuyển khi đang block.
+/// Block: giu S (P1) / mui ten xuong (P2) — giam damage + knockback, khong danh/di chuyen khi dang block.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class PlayerBlockController : MonoBehaviour
@@ -33,6 +33,10 @@ public sealed class PlayerBlockController : MonoBehaviour
             playerController = GetComponent<PlayerController>();
         if (characterType == null)
             characterType = GetComponent<CharacterType>();
+
+        // Knight tankier but slightly easier to shove while blocking.
+        if (characterType != null && characterType.character == CharacterType.Character.Knight)
+            knockbackMultiplierWhileBlocking = 0.45f;
     }
 
     void Update()
@@ -53,9 +57,9 @@ public sealed class PlayerBlockController : MonoBehaviour
             return false;
 
         if (playerController.playerType == PlayerController.PlayerType.Player1)
-            return Input.GetKey(KeyCode.I);
+            return Input.GetKey(KeyCode.S);
 
-        return Input.GetKey(KeyCode.Keypad5);
+        return Input.GetKey(KeyCode.DownArrow);
     }
 
     void SetBlocking(bool value)

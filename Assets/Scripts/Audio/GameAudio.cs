@@ -23,7 +23,7 @@ namespace SkyfallArena.Audio
         [SerializeField] AudioClip mountainAmbience;
         [SerializeField] AudioClip skyAmbience;
         [SerializeField] AudioClip volcanoAmbience;
-        [SerializeField] AudioClip weatherTestAmbience;
+        [SerializeField] AudioClip weatherAmbience;
         [SerializeField] AudioClip testArenaAmbience;
         [SerializeField] AudioClip titleAmbience;
 
@@ -106,8 +106,8 @@ namespace SkyfallArena.Audio
             if (volcanoAmbience == null)
                 volcanoAmbience = Resources.Load<AudioClip>("Audio/Ambience/volcano");
 
-            if (weatherTestAmbience == null)
-                weatherTestAmbience = skyAmbience != null ? skyAmbience : mountainAmbience;
+            if (weatherAmbience == null)
+                weatherAmbience = skyAmbience != null ? skyAmbience : mountainAmbience;
             if (testArenaAmbience == null)
                 testArenaAmbience = mountainAmbience;
             if (titleAmbience == null)
@@ -188,8 +188,8 @@ namespace SkyfallArena.Audio
                     return skyAmbience;
                 case "Volcano":
                     return volcanoAmbience;
-                case "WeatherTest":
-                    return weatherTestAmbience != null ? weatherTestAmbience : skyAmbience;
+                case "Weather":
+                    return weatherAmbience != null ? weatherAmbience : skyAmbience;
                 case "TestArena":
                     return testArenaAmbience != null ? testArenaAmbience : mountainAmbience;
                 case "Title":

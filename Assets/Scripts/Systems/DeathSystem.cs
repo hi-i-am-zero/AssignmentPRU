@@ -21,7 +21,6 @@ namespace SkyfallArena.Systems
         [Header("Elimination Behavior")]
         [SerializeField] bool disablePlayerController = true;
         [SerializeField] bool disableAttackController = true;
-        [SerializeField] bool disableComboController = true;
         [SerializeField] bool disableKnockbackController = true;
         [SerializeField] bool freezeRigidbodyOnDeath = true;
         [SerializeField] bool disableAllCollidersOnDeath;
@@ -119,13 +118,6 @@ namespace SkyfallArena.Systems
                 var attack = GetComponent<AttackController>();
                 if (attack != null)
                     attack.enabled = false;
-            }
-
-            if (disableComboController)
-            {
-                var combo = GetComponent<ComboController>();
-                if (combo != null)
-                    combo.enabled = false;
             }
 
             if (disableKnockbackController)
