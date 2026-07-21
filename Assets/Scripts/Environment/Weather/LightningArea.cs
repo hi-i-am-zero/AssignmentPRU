@@ -8,8 +8,16 @@ namespace Environment.Weather
     [RequireComponent(typeof(BoxCollider2D))]
     public class LightningArea : MonoBehaviour
     {
+        // Thời gian giữa mỗi lần sét đánh trong vùng
+        // strikeInterval: giây
         [SerializeField] float strikeInterval = 3f;
+
+        // Máu mất mỗi lần sét trúng (không phải HP/s — damage một lần)
+        // strikeDamage: HP
         [SerializeField] float strikeDamage = 30f;
+
+        // Thời gian đèn vùng sáng mạnh khi sét đánh
+        // flashDuration: giây
         [SerializeField] float flashDuration = 0.15f;
 
         Light2D zoneLight;
@@ -20,11 +28,12 @@ namespace Environment.Weather
             var col = GetComponent<BoxCollider2D>();
             col.isTrigger = true;
 
+            // Ánh sáng đỏ cảnh báo vùng nguy hiểm
             zoneLight = GetComponentInChildren<Light2D>();
             if (zoneLight != null)
             {
                 zoneLight.color = ZoneLightColors.Hazard;
-                zoneLight.intensity = 0.4f;
+                zoneLight.intensity = 0.4f; // Độ sáng nền (0–1+)
             }
         }
 
@@ -35,6 +44,7 @@ namespace Environment.Weather
                 StopCoroutine(strikeRoutine);
         }
 
+        // Lặp vô hạn: mỗi strikeInterval giây → Strike()
         IEnumerator StrikeLoop()
         {
             var wait = new WaitForSeconds(strikeInterval);
@@ -45,6 +55,7 @@ namespace Environment.Weather
             }
         }
 
+        // Quét OverlapBox — damage mọi player còn sống trong vùng (không theo hướng)
         IEnumerator Strike()
         {
             if (zoneLight != null)

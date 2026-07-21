@@ -10,11 +10,15 @@ using UnityEngine.SceneManagement;
 
 namespace Environment.Editor
 {
+    /// <summary>
+    /// Tự rebuild 5 map khi mở Unity nếu version thay đổi (.environment_version).
+    /// Đảm bảo scene luôn khớp với code EnvironmentSceneBuilder mới nhất.
+    /// </summary>
     [InitializeOnLoad]
     static class EnvironmentAutoRebuild
     {
         const string VersionFile = "Assets/Scenes/.environment_version";
-        const string CurrentVersion = "18";
+        const string CurrentVersion = "19";
 
         static EnvironmentAutoRebuild()
         {
@@ -41,19 +45,28 @@ namespace Environment.Editor
         }
     }
 
+    /// <summary>
+    /// Editor script dựng toàn bộ 5 map + hệ thống thời tiết.
+    /// Chạy tự động khi mở Unity (EnvironmentAutoRebuild) hoặc menu Environment → Build All Scenes.
+    /// Mỗi map = sprite platform + collider + spawn + weather, KHÔNG dùng tilemap.
+    /// </summary>
     public static class EnvironmentSceneBuilder
     {
         const string ScenesPath = "Assets/Scenes";
         const string SpritesPath = "Assets/Art/Sprites";
 
-        // Khung gọn để arena lấp đầy màn hình (ortho 7.5 -> view ~26.7 x 15)
-        const float CamSize = 7.5f;
-        const float ArenaW = 24f;
-        const float ArenaH = 14f;
-        const float PlayHalfW = 11f;
-        const float SpawnFeetOffset = 0.42f;
-        const float DeathZoneY = -8.2f;
+        // --- Hằng số kích thước dùng chung mọi map ---
+        // Khung gọn để arena lấp đầy màn hình (ortho 7.5 → view ~26.7 x 15)
+        // Tất cả giá trị f = float; đơn vị world unit ≈ mét trong Unity 2D
 
+        const float CamSize = 7.5f;          // orthographicSize: nửa chiều cao camera nhìn thấy (m)
+        const float ArenaW = 24f;            // Chiều rộng sân đấu (m)
+        const float ArenaH = 14f;            // Chiều cao sân đấu (m)
+        const float PlayHalfW = 11f;         // Nửa chiều rộng vùng chơi thực tế (m)
+        const float SpawnFeetOffset = 0.42f; // Chân player cao hơn mặt platform (m)
+        const float DeathZoneY = -8.2f;      // Tọa độ Y tâm vùng chết — đáy màn hình (m)
+
+        // Struct mô tả 1 platform: tên, vị trí, kích thước, sprite, có trơn không
         readonly struct Plat
         {
             public readonly string Name, Sprite;
@@ -102,6 +115,7 @@ namespace Environment.Editor
         [MenuItem("Environment/Rebuild All Scenes (Force)")]
         public static void RebuildAllScenesForce() => RebuildAllScenes(true);
 
+        // Xóa scene cũ (nếu force) → setup layer/tag → build lần lượt 5 map → cập nhật Build Settings
         static void RebuildAllScenes(bool force)
         {
             if (force)
@@ -196,9 +210,11 @@ namespace Environment.Editor
 
         static float SurfaceY(float centerY, float height) => centerY + height * 0.5f;
 
+        // Tính vị trí spawn: trên mặt platform + offset chân player
         static Vector2 StandOn(Vector2 platPos, Vector2 platSize, float xOffset = 0f)
             => new Vector2(platPos.x + xOffset, SurfaceY(platPos.y, platSize.y) + SpawnFeetOffset);
 
+        // Dựng danh sách platform — Slippery=true dùng SlipperyPlatform (băng)
         static void BuildPlatforms(Transform root, IEnumerable<Plat> plats)
         {
             foreach (var p in plats)
@@ -210,6 +226,7 @@ namespace Environment.Editor
             }
         }
 
+        // Map 1: TestArena — layout cơ bản, thời tiết Clear (không hiệu ứng)
         static void BuildTestArena()
         {
             var bg = new Color(0.78f, 0.82f, 0.88f);
@@ -247,6 +264,7 @@ namespace Environment.Editor
             SaveScene(scene, $"{ScenesPath}/TestArena.unity");
         }
 
+        // Map 2: Mountain — cỏ, cây, chim. Thời tiết Rain (mưa nhẹ + tối)
         static void BuildMountainMap()
         {
             var bg = new Color(0.45f, 0.68f, 0.82f);
@@ -296,6 +314,7 @@ namespace Environment.Editor
             SaveScene(scene, $"{ScenesPath}/Mountain.unity");
         }
 
+        // Map 3: Volcano — lava DOT đáy, sàn đá lơ lửng. Thời tiết Thunder (sấm + sét vùng giữa)
         static void BuildVolcanoMap()
         {
             var bg = new Color(0.22f, 0.10f, 0.08f);
@@ -346,6 +365,7 @@ namespace Environment.Editor
             SaveScene(scene, $"{ScenesPath}/Volcano.unity"); // v13 lava-bottom layout
         }
 
+        // Map 4: Sky — platform mây dao động + gió (7, 0.3) tự đổi hướng. Thời tiết Wind
         static void BuildSkyMap()
         {
             var bg = new Color(0.42f, 0.62f, 0.90f);
@@ -389,12 +409,14 @@ namespace Environment.Editor
                 StandOn(sideR, sSide, 0),
             });
             CreateItemSpawns(root, new[] { StandOn(crown, sCrown, 0) });
+            // WindZone: pos (m), size collider (m), force (Newton qua AddForce: x=7 ngang, y=0.3 lên)
             var wind = CreateWindZone(root, new Vector2(0, 0.5f), new Vector2(ArenaW, 10f), new Vector2(7f, 0.3f));
             CreateWeatherSystem(root, WeatherType.Wind, null, new[] { wind }, Vector2.right);
             AddArenaManager(root, "Sky");
             SaveScene(scene, $"{ScenesPath}/Sky.unity");
         }
 
+        // Map 5: WeatherTest — băng trơn + gió mạnh (8, 0.35) + sét vùng thấp. Thời tiết Storm (tất cả hiệu ứng)
         static void BuildWeatherTestArena()
         {
             var bg = new Color(0.38f, 0.42f, 0.52f);
@@ -417,6 +439,7 @@ namespace Environment.Editor
                 new Plat("Ice_Crown", crown, crownSize, "platform_ice", slippery: true),
             });
 
+            // WindZone mạnh hơn Sky: force x=8 (Newton). LightningArea: pos (m), size (m)
             var wind = CreateWindZone(root, new Vector2(0, 0.5f), new Vector2(ArenaW, 11f), new Vector2(8f, 0.35f));
             var lightning = CreateLightningArea(root, new Vector2(0, -2f), new Vector2(7f, 2f));
 
@@ -436,6 +459,7 @@ namespace Environment.Editor
 
         #region Weather & Effects
 
+        // Tạo vùng gió gameplay: box trigger phủ arena, gán windForce (lực đẩy player)
         static Environment.Weather.WindZone CreateWindZone(Transform parent, Vector2 pos, Vector2 size, Vector2 force)
         {
             var go = new GameObject("WindZone");
@@ -451,6 +475,7 @@ namespace Environment.Editor
             return wind;
         }
 
+        // Tạo vùng sét damage: box trigger + LightningArea + ánh sáng đỏ cảnh báo
         static LightningArea CreateLightningArea(Transform parent, Vector2 pos, Vector2 size)
         {
             var go = new GameObject("LightningArea");
@@ -464,6 +489,8 @@ namespace Environment.Editor
             return go.GetComponent<LightningArea>();
         }
 
+        // Dựng toàn bộ stack thời tiết: ambient, mưa, sấm, gió visual, WindDirectionController, WeatherManager
+        // weather: loại thời tiết | lightning: vùng sét (Volcano/WeatherTest) | windZones: vùng gió (Sky/WeatherTest)
         static void CreateWeatherSystem(Transform parent, WeatherType weather,
             LightningArea lightning = null,
             Environment.Weather.WindZone[] windZones = null,
@@ -497,6 +524,28 @@ namespace Environment.Editor
             windVisGo.GetComponent<ParticleSystemRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             var windVisual = windVisGo.AddComponent<WindVisualEffect>();
 
+            WindDirectionController windDirection = null;
+            if (windZones != null && windZones.Length > 0)
+            {
+                windDirection = weatherRoot.AddComponent<WindDirectionController>();
+                var wdSo = new SerializedObject(windDirection);
+                var wdZones = wdSo.FindProperty("windZones");
+                if (wdZones != null)
+                {
+                    wdZones.arraySize = windZones.Length;
+                    for (int i = 0; i < windZones.Length; i++)
+                        wdZones.GetArrayElementAtIndex(i).objectReferenceValue = windZones[i];
+                }
+                SetSoRef(wdSo, "windVisual", windVisual);
+                if (windZones[0] != null)
+                {
+                    var force = windZones[0].WindForce;
+                    wdSo.FindProperty("horizontalStrength").floatValue = Mathf.Abs(force.x);
+                    wdSo.FindProperty("verticalStrength").floatValue = force.y;
+                }
+                wdSo.ApplyModifiedProperties();
+            }
+
             var weatherMgr = weatherRoot.AddComponent<WeatherManager>();
             var wmSo = new SerializedObject(weatherMgr);
             SetSoRef(wmSo, "currentWeather", (int)weather, true);
@@ -504,6 +553,7 @@ namespace Environment.Editor
             SetSoRef(wmSo, "thunderEffect", thunderEffect);
             SetSoRef(wmSo, "windVisual", windVisual);
             SetSoRef(wmSo, "ambientController", ambient);
+            SetSoRef(wmSo, "windDirectionController", windDirection);
 
             if (windZones != null && windZones.Length > 0)
             {
@@ -530,59 +580,61 @@ namespace Environment.Editor
                 lightning.gameObject.SetActive(needsThunder);
         }
 
+        // Cấu hình particle mưa — các giá trị f là: giây, unit/s, world unit, hạt/s, hệ số gravity
         static void ConfigureRainParticles(ParticleSystem ps)
         {
             var main = ps.main;
-            main.startLifetime = 1.2f;
-            main.startSpeed = 14f;
-            main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.06f);
+            main.startLifetime = 1.2f;   // Thời gian sống hạt mưa (giây)
+            main.startSpeed = 14f;       // Tốc độ rơi ban đầu (unit/s)
+            main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.06f); // Kích thước hạt (m)
             main.startColor = new Color(0.7f, 0.8f, 1f, 0.6f);
-            main.maxParticles = 1000;
+            main.maxParticles = 1000;    // Số hạt tối đa cùng lúc
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.gravityModifier = 1.5f;
+            main.gravityModifier = 1.5f; // Hệ số trọng lực (1.5× gravity Unity)
 
             var emission = ps.emission;
             emission.enabled = true;
-            emission.rateOverTime = 80f;
+            emission.rateOverTime = 80f;  // Hạt sinh ra/giây (RainEffect sẽ ghi đè 40 hoặc 120)
 
             var shape = ps.shape;
             shape.enabled = true;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(ArenaW + 2, 0.5f, 1);
+            shape.scale = new Vector3(ArenaW + 2, 0.5f, 1); // Hộp phát mưa (m)
 
             var vel = ps.velocityOverLifetime;
             vel.enabled = true;
             vel.space = ParticleSystemSimulationSpace.World;
-            vel.y = new ParticleSystem.MinMaxCurve(-2f);
+            vel.y = new ParticleSystem.MinMaxCurve(-2f); // Vận tốc rơi thêm (unit/s, âm = xuống)
         }
 
+        // Cấu hình particle gió visual — không ảnh hưởng lực gameplay (WindZone)
         static void ConfigureWindParticles(ParticleSystem ps, Vector2 dir)
         {
             if (dir.sqrMagnitude < 0.01f) dir = Vector2.right;
             dir.Normalize();
 
             var main = ps.main;
-            main.startLifetime = 0.8f;
-            main.startSpeed = 0f;
-            main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.14f);
+            main.startLifetime = 0.8f;   // Thời gian sống hạt gió (giây)
+            main.startSpeed = 0f;        // Vận tốc ban đầu = 0, hướng do velocityOverLifetime quyết định
+            main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.14f); // Kích thước hạt (m)
             main.startColor = new Color(1f, 1f, 1f, 0.3f);
             main.maxParticles = 250;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
 
             var emission = ps.emission;
             emission.enabled = true;
-            emission.rateOverTime = 30f;
+            emission.rateOverTime = 30f; // Hạt sinh ra/giây
 
             var shape = ps.shape;
             shape.enabled = true;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(ArenaW, 8f, 1);
+            shape.scale = new Vector3(ArenaW, 8f, 1); // Hộp phát gió (m)
 
             var vel = ps.velocityOverLifetime;
             vel.enabled = true;
             vel.space = ParticleSystemSimulationSpace.World;
-            vel.x = new ParticleSystem.MinMaxCurve(dir.x * 6f);
-            vel.y = new ParticleSystem.MinMaxCurve(dir.y * 2f);
+            vel.x = new ParticleSystem.MinMaxCurve(dir.x * 6f); // Vận tốc ngang hạt (unit/s)
+            vel.y = new ParticleSystem.MinMaxCurve(dir.y * 2f); // Vận tốc dọc hạt (unit/s)
         }
 
         static void SetSoRef(SerializedObject so, string prop, Object value)
@@ -601,6 +653,7 @@ namespace Environment.Editor
 
         #region Scene Helpers
 
+        // Tạo scene rỗng + camera orthographic + Global Light 2D + root object
         static (Scene scene, Transform root) CreateBaseScene(string sceneName, Color bgColor)
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -629,7 +682,7 @@ namespace Environment.Editor
             return (scene, root);
         }
 
-        /// <summary>Single full-screen HQ background + optional ambient particles.</summary>
+        // Background full-screen + ParallaxDrift + AmbientParticles (sao/tuyết/ember tùy map)
         static void CreateMapBackground(Transform parent, string fullBgSprite,
             Color cameraFallback, AmbientParticleStyle ambient)
         {
@@ -686,6 +739,7 @@ namespace Environment.Editor
             t.localScale = new Vector3(ViewWidth * widthFrac / b.x, ViewHeight * heightFrac / b.y, 1f);
         }
 
+        // Tường trái/phải/trên — ArenaBoundary, player không đi ra ngoài arena
         static void CreateBoundaries(Transform parent, float width, float height)
         {
             var bounds = new GameObject("Boundaries");
@@ -914,6 +968,7 @@ namespace Environment.Editor
             go.AddComponent<HazardZone>();
         }
 
+        // Vùng chết đáy map — player chạm vào bị loại khỏi trận
         static void CreateDeathZone(Transform parent, Vector2 pos, Vector2 size)
         {
             var go = new GameObject("DeathZone");
@@ -925,6 +980,7 @@ namespace Environment.Editor
             go.AddComponent<DeathZone>();
         }
 
+        // Tạo PlayerSpawnPoint với playerIndex 1, 2, 3... tại các vị trí đã tính bằng StandOn()
         static void CreatePlayerSpawns(Transform parent, Vector2[] positions)
         {
             var spawns = new GameObject("PlayerSpawnPoints");
@@ -972,6 +1028,7 @@ namespace Environment.Editor
             light.pointLightOuterRadius = radius;
         }
 
+        // Gắn ArenaManager — quản lý tên map và spawn points cho LocalMultiplayerManager
         static void AddArenaManager(Transform parent, string mapName)
         {
             var manager = new GameObject("ArenaManager");

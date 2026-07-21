@@ -7,7 +7,13 @@ namespace Environment.Weather
     {
         [SerializeField] ParticleSystem rainParticles;
         [SerializeField] AudioSource rainAudio;
+
+        // Mưa nhẹ — map Mountain (Rain)
+        // lightRainRate: hạt mưa/giây (hạt/s)
         [SerializeField] float lightRainRate = 40f;
+
+        // Mưa nặng — map WeatherTest (Storm)
+        // heavyRainRate: hạt mưa/giây (hạt/s)
         [SerializeField] float heavyRainRate = 120f;
 
         bool isHeavy;
@@ -18,6 +24,8 @@ namespace Environment.Weather
                 rainParticles = GetComponent<ParticleSystem>();
         }
 
+        // WeatherManager gọi: active=true bật mưa, heavy=true = Storm
+        // Mưa KHÔNG đẩy player — chỉ particle + audio
         public void SetActive(bool active, bool heavy = false)
         {
             isHeavy = heavy;
