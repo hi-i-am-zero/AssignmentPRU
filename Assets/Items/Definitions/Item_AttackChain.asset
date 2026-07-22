@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67ad5b76a84297448ba2684ffafb8d6d, type: 3}
+  m_Name: Item_AttackChain
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemDefinition
+  itemType: 1
+  displayName: Attack Chain
+  maxLevel: 3
+  worldSprite: {fileID: 21300000, guid: b2528d03bf761f64cba3248542c8255a, type: 3}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  levelData:
+  - level: 1
+    description: 'Lv1: +5 Damage'
+  - level: 2
+    description: 'Lv2: +10 Damage'
+  - level: 3
+    description: 'Lv3: +15 Damage'
+  pickupPrefabOverride: {fileID: 665231842852606894, guid: 9f8a5ddaf57f4c2a9e8a9210d011d0a1, type: 3}

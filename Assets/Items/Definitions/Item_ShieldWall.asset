@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67ad5b76a84297448ba2684ffafb8d6d, type: 3}
+  m_Name: Item_ShieldWall
+  m_EditorClassIdentifier: Assembly-CSharp::SkyfallArena.Systems.Items.ItemDefinition
+  itemType: 2
+  displayName: Shield Wall
+  maxLevel: 3
+  worldSprite: {fileID: 21300000, guid: c06f26d8f98159948849ebf6d7d1d2d5, type: 3}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  levelData:
+  - level: 1
+    description: 'Lv1: 10% Damage Reduction'
+  - level: 2
+    description: 'Lv2: 20% Damage Reduction'
+  - level: 3
+    description: 'Lv3: 30% Damage Reduction'
+  pickupPrefabOverride: {fileID: 665231842852606894, guid: a3e7f1d98b304b2db7c9e59ed4e4189c, type: 3}

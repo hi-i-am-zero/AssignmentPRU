@@ -40,3 +40,6 @@ sysinfo.txt
 # =============== ADDRESSABLES & CUSTOM ===============
 # Thư mục build mặc định của Addressables (tránh push asset bundle lên git script)
 /[Ss]erverData/
+
+# Python venv for asset generation
+.venv/

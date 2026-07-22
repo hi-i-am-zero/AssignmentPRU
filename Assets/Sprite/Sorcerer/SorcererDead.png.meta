@@ -1,0 +1,559 @@
+fileFormatVersion: 2
+guid: 26c4ce55ac2fd644298da831750e2c5f
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -185508832496653593
+    second: SorcererDead_0
+  - first:
+      213: -585071039614570834
+    second: SorcererDead_1
+  - first:
+      213: -6617253283186156136
+    second: SorcererDead_2
+  - first:
+      213: 1101536690377037371
+    second: SorcererDead_3
+  - first:
+      213: -2855275044494569342
+    second: SorcererDead_4
+  - first:
+      213: -8673560560170298943
+    second: SorcererDead_5
+  - first:
+      213: 5927628862660365649
+    second: SorcererDead_6
+  - first:
+      213: 2029682051745220039
+    second: SorcererDead_7
+  - first:
+      213: -2093152770567343431
+    second: SorcererDead_8
+  - first:
+      213: 1152092123436828203
+    second: SorcererDead_9
+  - first:
+      213: -5697522847543185286
+    second: SorcererDead_10
+  - first:
+      213: -6517922476376522781
+    second: SorcererDead_11
+  - first:
+      213: -1015258507709794165
+    second: SorcererDead_12
+  - first:
+      213: -4975049236081022811
+    second: SorcererDead_13
+  - first:
+      213: 4952794126056246523
+    second: SorcererDead_14
+  - first:
+      213: 968749942997052079
+    second: SorcererDead_15
+  - first:
+      213: 8512796973794937354
+    second: SorcererDead_16
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SorcererDead_0
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 61
+        width: 39
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7eae65023b0fc6df0800000000000000
+      internalID: -185508832496653593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_1
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 61
+        width: 39
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eaea7634df861e7f0800000000000000
+      internalID: -585071039614570834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_2
+      rect:
+        serializedVersion: 2
+        x: 290
+        y: 47
+        width: 60
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89dd6ead23bca24a0800000000000000
+      internalID: -6617253283186156136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_3
+      rect:
+        serializedVersion: 2
+        x: 292
+        y: 65
+        width: 41
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b369bf0a8c1794f00800000000000000
+      internalID: 1101536690377037371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_4
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 41
+        width: 58
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2801dd499760068d0800000000000000
+      internalID: -2855275044494569342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_5
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 1
+        width: 63
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c1163100a251a780800000000000000
+      internalID: -8673560560170298943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_6
+      rect:
+        serializedVersion: 2
+        x: 162
+        y: 39
+        width: 62
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15d493f6b0b234250800000000000000
+      internalID: 5927628862660365649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_7
+      rect:
+        serializedVersion: 2
+        x: 174
+        y: 31
+        width: 29
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c582458211ea2c10800000000000000
+      internalID: 2029682051745220039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_8
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 39
+        width: 50
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b275b925a0a3f2e0800000000000000
+      internalID: -2093152770567343431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_9
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 28
+        width: 29
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b264af5aead0dff00800000000000000
+      internalID: 1152092123436828203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_10
+      rect:
+        serializedVersion: 2
+        x: 430
+        y: 30
+        width: 29
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a70348c28255ee0b0800000000000000
+      internalID: -5697522847543185286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_11
+      rect:
+        serializedVersion: 2
+        x: 170
+        y: 13
+        width: 36
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3effa0a8a00bb85a0800000000000000
+      internalID: -6517922476376522781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_12
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 1
+        width: 33
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b88b3cc24c319e1f0800000000000000
+      internalID: -1015258507709794165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_13
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 13
+        width: 36
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a8ef47241315fab0800000000000000
+      internalID: -4975049236081022811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_14
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 1
+        width: 33
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfc4931440cdbb440800000000000000
+      internalID: 4952794126056246523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_15
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 21
+        width: 31
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: faae484c0f0b17d00800000000000000
+      internalID: 968749942997052079
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SorcererDead_16
+      rect:
+        serializedVersion: 2
+        x: 426
+        y: 11
+        width: 35
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0a4114beb7832670800000000000000
+      internalID: 8512796973794937354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SorcererDead_0: -185508832496653593
+      SorcererDead_1: -585071039614570834
+      SorcererDead_10: -5697522847543185286
+      SorcererDead_11: -6517922476376522781
+      SorcererDead_12: -1015258507709794165
+      SorcererDead_13: -4975049236081022811
+      SorcererDead_14: 4952794126056246523
+      SorcererDead_15: 968749942997052079
+      SorcererDead_16: 8512796973794937354
+      SorcererDead_2: -6617253283186156136
+      SorcererDead_3: 1101536690377037371
+      SorcererDead_4: -2855275044494569342
+      SorcererDead_5: -8673560560170298943
+      SorcererDead_6: 5927628862660365649
+      SorcererDead_7: 2029682051745220039
+      SorcererDead_8: -2093152770567343431
+      SorcererDead_9: 1152092123436828203
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
